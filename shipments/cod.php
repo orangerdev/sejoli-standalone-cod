@@ -1,6 +1,6 @@
 <?php
 
-namespace Sejoli_Standalone_Cod\ShipmentJNE;
+namespace Sejoli_Standalone_Cod\ShipmentCOD;
 
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
@@ -10,7 +10,7 @@ use Sejoli_Standalone_Cod\Model\JNE\Tariff as JNE_Tariff;
 use Sejoli_Standalone_Cod\API\JNE as API_JNE;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-class CODJNE {
+class PaymentCOD {
 
     /**
      * Table name
@@ -38,30 +38,11 @@ class CODJNE {
      * @since   1.2.0
      */
     public function __construct() {
+
         global $wpdb;
 
         $this->id    = 'cod';
         $this->table = $wpdb->prefix . $this->table;
-
-        $this->define_hooks();
-    }
-
-    /**
-     * Register all of the hooks related to cod request
-     *
-     * @since   1.0.0
-     * @access  private
-     */
-    public function define_hooks(){
-
-        // Shipment Method
-        add_filter( 'sejoli/shipment/options',  array($this, 'set_shipping_options'),        10, 2);
-        add_filter( 'sejoli/product/fields',    array($this, 'set_product_shipping_fields'), 36);
-        add_action( 'sejoli/product/meta-data', array($this, 'setup_product_cod_meta'),      10, 2);
-
-        // Payment Method
-        add_action('admin_init', [$this, 'register_transaction_table'], 1);
-        add_filter('sejoli/payment/payment-options', [$this, 'add_payment_options'] );
 
     }
 
@@ -73,8 +54,8 @@ class CODJNE {
         
         global $wpdb;
 
-        if(!Capsule::schema()->hasTable( $this->table )):
-            Capsule::schema()->create( $this->table, function($table){
+        if( !Capsule::schema()->hasTable( $this->table ) ):
+            Capsule::schema()->create( $this->table, function( $table ){
                 $table->increments('ID');
                 $table->datetime('created_at');
                 $table->datetime('updated_at')->default('0000-00-00 00:00:00');
@@ -500,6 +481,8 @@ class CODJNE {
         $get_tariff = JNE_Tariff::where( 'jne_origin_id', $origin->ID )
                         ->where( 'jne_destination_id', $destination->ID )
                         ->first();
+
+        // error_log(print_r($origin, true));
 
         if( ! $get_tariff ) {
             // $req_tariff_data = API_JNE::set_params()->get_tariff( $origin->code, $destination->code, $weight );

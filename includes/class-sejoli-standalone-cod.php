@@ -79,6 +79,7 @@ class Sejoli_Standalone_Cod {
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 		$this->define_json_hooks();
+		$this->define_shipment_hooks();
 
 	}
 
@@ -172,6 +173,11 @@ class Sejoli_Standalone_Cod {
 		require_once SEJOLI_STANDALONE_COD_DIR . 'admin/shipment.php';
 
 		/**
+		 * The class responsible for defining all actions that work for shipment functions
+		 */
+		require_once SEJOLI_STANDALONE_COD_DIR . 'shipments/cod.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
@@ -214,11 +220,11 @@ class Sejoli_Standalone_Cod {
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_scripts' );
 
-		$shipmentJNE = new Sejoli_Standalone_Cod\Admin\ShipmentJNE( $this->get_plugin_name(), $this->get_version() );
+		$shipment = new Sejoli_Standalone_Cod\Admin\ShipmentCOD( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'plugins_loaded',							  $shipmentJNE, 'register_libraries', 10);
-		$this->loader->add_filter( 'sejoli/admin/js-localize-data',		 	      $shipmentJNE, 'set_localize_js_var', 10);
-		$this->loader->add_action( 'carbon_fields_theme_options_container_saved', $shipmentJNE, 'delete_cache_data', 10);
+		$this->loader->add_action( 'plugins_loaded',							  $shipment, 'register_libraries', 10);
+		$this->loader->add_filter( 'sejoli/admin/js-localize-data',		 	      $shipment, 'set_localize_js_var', 10);
+		$this->loader->add_action( 'carbon_fields_theme_options_container_saved', $shipment, 'delete_cache_data', 10);
 
 	}
 
@@ -253,6 +259,26 @@ class Sejoli_Standalone_Cod {
 		$this->loader->add_filter( 'cron_schedules', $order, 'sejoli_update_status_cron_schedules' );
 		$this->loader->add_action( 'admin_init', $order, 'schedule_update_order_to_complete_based_on_shipment_status' );
 		$this->loader->add_action( 'update_status_order_to_completed', $order, 'update_status_order_to_completed_based_on_shipment_status' );
+
+	}
+
+	/**
+	 * Register all of the hooks related to shipment request
+	 *
+	 * @since 	 1.0.0
+	 * @access 	 private
+	 */
+	private function define_shipment_hooks() {
+
+		$shipment = new Sejoli_Standalone_Cod\ShipmentCOD\PaymentCOD();
+
+		$this->loader->add_filter( 'sejoli/shipment/options',  $shipment, 'set_shipping_options',        10, 2);
+        $this->loader->add_filter( 'sejoli/product/fields',    $shipment, 'set_product_shipping_fields', 36);
+        $this->loader->add_action( 'sejoli/product/meta-data', $shipment, 'setup_product_cod_meta',      10, 2);
+
+        // Payment Method
+        $this->loader->add_action('admin_init', $shipment, 'register_transaction_table', 1);
+        $this->loader->add_filter('sejoli/payment/payment-options', $shipment, 'add_payment_options' );
 
 	}
 

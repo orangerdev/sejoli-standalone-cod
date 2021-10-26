@@ -34,17 +34,19 @@
 	    $('body').on( 'change', 'select#shipping_method', function(e){
 	        e.preventDefault();
 
-	        $('input[value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
-	        $('input[value="cod:::CashOnDelivery"]').prop('checked', true);
+	        $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
+	        $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', true);
 
 	        var s = $(this).val();
 	        if (s.match(/COD.*/)) {
-	            $('input[value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
-	            $('input[value="cod:::CashOnDelivery"]').prop('checked', true);
+	            $('input[name="payment_gateway"]').closest('.eight').addClass('hide');
+	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
+	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', true);
 	        } else {
-	            $('input[value="cod:::CashOnDelivery"]').closest('.eight').addClass('hide');
-	            $('input[value="cod:::CashOnDelivery"]').prop('checked', false);
-	            $('.eight:nth-child(2) .ui input[name="payment_gateway"]').prop('checked', true);
+	        	$('input[name="payment_gateway"]').closest('.eight').removeClass('hide');
+	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').addClass('hide');
+	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', false);
+	            $('.eight:nth-child(1) .ui input[name="payment_gateway"]').prop('checked', true);
 	        }
 	    });
 
