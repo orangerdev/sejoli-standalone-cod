@@ -5,6 +5,7 @@ namespace Sejoli_Standalone_Cod\ShipmentCOD;
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 use \WeDevs\ORM\Eloquent\Facades\DB;
+use Sejoli_Standalone_Cod\Model\JNE\Origin as JNE_Origin;
 use Sejoli_Standalone_Cod\Model\JNE\Destination as JNE_Destination;
 use Sejoli_Standalone_Cod\Model\JNE\Tariff as JNE_Tariff;
 use Sejoli_Standalone_Cod\API\JNE as API_JNE;
@@ -482,12 +483,13 @@ class PaymentCOD {
                         ->where( 'jne_destination_id', $destination->ID )
                         ->first();
 
-        // error_log(print_r($origin, true));
+        error_log(print_r($origin->code, true));
+        error_log(print_r($destination->code, true));
 
         if( ! $get_tariff ) {
-            // $req_tariff_data = API_JNE::set_params()->get_tariff( $origin->code, $destination->code, $weight );
-            $req_tariff_data = API_JNE::set_params()->get_tariff( 'CGK10000', 'BDO10000', $weight );
-
+            $req_tariff_data = API_JNE::set_params()->get_tariff( $origin->code, $destination->code, $weight );
+            // $req_tariff_data = API_JNE::set_params()->get_tariff( 'CGK10000', 'BDO10000', $weight );
+            // error_log(print_r($req_tariff_data, true));
             if( is_wp_error( $req_tariff_data ) ) {
                 return false;
             }
@@ -522,17 +524,48 @@ class PaymentCOD {
 
             $cod_origin           = carbon_get_post_meta( $product_id, 'shipment_cod_jne_origin');
             $cod_origin_city      = $this->get_subdistrict_detail( $cod_origin );
+            // $get_origin           = JNE_Origin::where( 'name', $cod_origin_city['city'] )->first();
+
+            $getOriginCode = DB::table( 'sejolisa_shipping_jne_origin' )
+                    ->where( 'city_id', $cod_origin_city['city_id'] )
+                    ->get();        
+
+            if( ! $getOriginCode ) {
+                return false;
+            }
+
+            $origin = $getOriginCode[0];
+
+            if( ! $origin ) {
+                return false;
+            }
+
             $cod_destination_city = $this->get_subdistrict_detail( $post_data['district_id'] );
+
+            $getDestCode = DB::table( 'sejolisa_shipping_jne_destination' )
+                    ->where( 'city_id', $cod_destination_city['city_id'] )
+                    ->where( 'district_id', $cod_destination_city['subdistrict_id'] )
+                    ->get();        
+
+            if( ! $getDestCode ) {
+                return false;
+            }
+
+            $destination = $getDestCode[0];
+
+            if( ! $destination ) {
+                return false;
+            }
+
+            // $get_destination      = JNE_Destination::where( 'district_name', $cod_destination_city['subdistrict_name'] )->first(); 
             $is_cod_locally       = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_cover' ) );
             $add_options          = true;
             $fee_title            = '';
-            $get_origin           = JNE_Destination::where( 'city_name', $cod_origin_city['city'] )->first();
-            $get_destination      = JNE_Destination::where( 'district_name', $cod_destination_city['subdistrict_name'] )->first(); 
             $product              = sejolisa_get_product( $post_data['product_id'] );
             $product_weight       = intval( $product->shipping['weight'] );
             $weight_cost          = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
             $weight_cost          = ( 0 === $weight_cost ) ? 1 : $weight_cost;
-            $tariff               = $this->get_tariff_info( $get_origin, $get_destination, $weight_cost );
+            $tariff               = $this->get_tariff_info( $origin, $destination, $weight_cost );
 
             if( true === $is_cod_locally ) :
                 
