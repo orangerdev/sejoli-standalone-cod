@@ -81,7 +81,7 @@ class PaymentCOD {
 
         $url        = $_SERVER['HTTP_REFERER'];
         $product_id = url_to_postid( $url );
-        $active     = carbon_get_post_meta($product_id, 'shipment_cod_jne_active');
+        $active     = carbon_get_post_meta($product_id, 'shipment_cod_services_active');
 
         if(true === $active) :
 
@@ -139,7 +139,7 @@ class PaymentCOD {
             return;
         endif;
 
-        $content = __('via Cash on Delivery', 'sejoli');
+        $content = __('via Cash on Delivery', 'sejoli-standalone-cod');
 
         return $content;
 
@@ -331,17 +331,55 @@ class PaymentCOD {
         $fields[]   = array(
             'title'     => __('Cash on Delivery (COD)', 'sejoli-standalone-cod'),
             'fields'    => array(
-                Field::make( 'separator', 'sep_cod_jne' , __('Cash on Delivery (COD)', 'sejoli-standalone-cod'))
+                Field::make( 'separator', 'sep_cod_services' , __('Cash on Delivery (COD)', 'sejoli-standalone-cod'))
                     ->set_classes('sejoli-with-help')
                     ->set_help_text('<a href="' . sejolisa_get_admin_help('shipping') . '" class="thickbox sejoli-help">Tutorial <span class="dashicons dashicons-video-alt2"></span></a>'),
 
-                Field::make('checkbox', 'shipment_cod_jne_active', __('Aktifkan COD JNE', 'sejoli-standalone-cod'))
+                Field::make('checkbox', 'shipment_cod_services_active', __('Aktifkan COD', 'sejoli-standalone-cod'))
                     ->set_option_value('yes')
                     ->set_default_value(true),
 
-                Field::make('separator', 'sep_cod_jne_store_setting', __('Pengaturan Toko', 'sejoli-standalone-cod'))->set_conditional_logic(array(
+                Field::make('text', 'sejoli_scod_username', __('SCOD Username', 'sejoli-standalone-cod'))
+                    ->set_required(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('text', 'sejoli_scod_password', __('SCOD Password', 'sejoli-standalone-cod'))
+                    ->set_required(true)
+                    ->set_attribute('type', 'password')
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('text', 'sejoli_scod_store_id', __('SCOD Store ID', 'sejoli-standalone-cod'))
+                    ->set_required(true)
+                    ->set_attribute('type', 'number')
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('text', 'sejoli_scod_secret_key', __('SCOD Secret Key', 'sejoli-standalone-cod'))
+                    ->set_required(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('separator', 'sep_cod_services_store_setting', __('Pengaturan Toko', 'sejoli-standalone-cod'))->set_conditional_logic(array(
                     array(
-                        'field' => 'shipment_cod_jne_active',
+                        'field' => 'shipment_cod_services_active',
                         'value' => true
                     )
                 )),
@@ -351,7 +389,7 @@ class PaymentCOD {
                     ->set_default_value(get_bloginfo('name'))
                     ->set_conditional_logic(array(
                         array(
-                            'field' => 'shipment_cod_jne_active',
+                            'field' => 'shipment_cod_services_active',
                             'value' => true
                         )
                     )),
@@ -361,14 +399,14 @@ class PaymentCOD {
                     ->set_required(true)
                     ->set_conditional_logic(array(
                         array(
-                            'field' => 'shipment_cod_jne_active',
+                            'field' => 'shipment_cod_services_active',
                             'value' => true
                         )
                     )),
                 
-                Field::make('separator', 'sep_cod_jne_setting', __('Pengaturan Layanan COD JNE', 'sejoli-standalone-cod'))->set_conditional_logic(array(
+                Field::make('separator', 'sep_cod_services_setting', __('Pengaturan Layanan COD JNE', 'sejoli-standalone-cod'))->set_conditional_logic(array(
                     array(
-                        'field' => 'shipment_cod_jne_active',
+                        'field' => 'shipment_cod_services_active',
                         'value' => true
                     )
                 )),
@@ -381,7 +419,7 @@ class PaymentCOD {
                     ))
                     ->set_conditional_logic(array(
                         array(
-                            'field' => 'shipment_cod_jne_active',
+                            'field' => 'shipment_cod_services_active',
                             'value' => true
                         )
                     )),
@@ -389,23 +427,103 @@ class PaymentCOD {
                 Field::make('text', 'shipment_cod_jne_weight', __('Berat barang (dalam gram)', 'sejoli-standalone-cod'))
                     ->set_attribute('type', 'number')
                     ->set_attribute('min', 1000)
-                    ->set_required(true)
                     ->set_conditional_logic(array(
                         array(
-                            'field' => 'shipment_cod_jne_active',
+                            'field' => 'shipment_cod_services_active',
                             'value' => true
                         )
                     )),
 
                 Field::make('select', 'shipment_cod_jne_origin', __('Awal pengiriman', 'sejoli-standalone-cod'))
                     ->set_options(array($this, 'get_subdistrict_options'))
-                    ->set_required(true)
                     ->set_conditional_logic(array(
                         array(
-                            'field' => 'shipment_cod_jne_active',
+                            'field' => 'shipment_cod_services_active',
                             'value' => true
                         )))
                     ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
+
+                Field::make('text', 'shipment_cod_jne_markup_label', __('Label Biaya Markup COD JNE', 'sejoli-standalone-cod'))
+                    ->set_default_value(__('Biaya COD JNE', 'sejoli-standalone-cod'))
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('checkbox', 'shipment_cod_jne_markup_with_ongkir', __('Biaya COD JNE Termasuk ke Ongkir?', 'sejoli-standalone-cod'))
+                    ->set_option_value('yes')
+                    ->set_default_value(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('separator', 'sep_cod_sicepat_setting', __('Pengaturan Layanan COD SiCepat', 'sejoli-standalone-cod'))->set_conditional_logic(array(
+                    array(
+                        'field' => 'shipment_cod_services_active',
+                        'value' => true
+                    )
+                )),
+
+                Field::make( "multiselect", "shipment_cod_sicepat_services", __('Layanan SiCepat', 'sejoli-standalone-cod') )
+                    ->add_options( array(
+                        'cod_sicepat_service_cargo' => 'Cargo',
+                        'cod_sicepat_service_best' => 'BEST',
+                        'cod_sicepat_service_gokil' => 'GOKIL',
+                        'cod_sicepat_service_kepo' => 'KEPO',
+                        'cod_sicepat_service_halu' => 'Halu',
+                        'cod_sicepat_service_reguler' => 'Regular',
+                        'cod_sicepat_service_sds' => 'SDS',
+                        'cod_sicepat_service_siunt' => 'SI UNTUNG',
+                    ))
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('text', 'shipment_cod_sicepat_weight', __('Berat barang (dalam gram)', 'sejoli-standalone-cod'))
+                    ->set_attribute('type', 'number')
+                    ->set_attribute('min', 1000)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('select', 'shipment_cod_sicepat_origin', __('Awal pengiriman', 'sejoli-standalone-cod'))
+                    ->set_options(array($this, 'get_subdistrict_options'))
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )))
+                    ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
+
+                Field::make('text', 'shipment_cod_sicepat_markup_label', __('Label Biaya Markup COD SiCepat', 'sejoli-standalone-cod'))
+                    ->set_default_value(__('Biaya COD SiCepat', 'sejoli-standalone-cod'))
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('checkbox', 'shipment_cod_sicepat_markup_with_ongkir', __('Biaya COD SiCepat Termasuk ke Ongkir?', 'sejoli-standalone-cod'))
+                    ->set_option_value('yes')
+                    ->set_default_value(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
             )
         );
 
@@ -414,7 +532,7 @@ class PaymentCOD {
     }
 
     /**
-     * Generate options for origin dropdown
+     * Generate options for sicepat services dropdown
      *
      * @since 1.0.0
      *
@@ -428,17 +546,70 @@ class PaymentCOD {
 
         foreach ( $jne_services as $jne_service ) {
 
-            if( $jne_service == 'cod_jne_service_reg' ) {
+            if( $jne_service === 'cod_jne_service_reg' ) {
                 $services[] = 'REG19';
             }
 
-            if( $jne_service == 'cod_jne_service_oke' ) {
+            if( $jne_service === 'cod_jne_service_oke' ) {
                 $services[] = 'OKE19';
             }
 
-            if( $jne_service == 'cod_jne_service_jtr' ) {
+            if( $jne_service === 'cod_jne_service_jtr' ) {
                 $codes    = array( 'JTR18', 'JTR250', 'JTR<150', 'JTR>250' );
                 $services = array_merge( $services, $codes );
+            }
+
+        }
+
+        return $services;
+
+    }
+
+    /**
+     * Generate options for sicepat services dropdown
+     *
+     * @since 1.0.0
+     *
+     * @return array
+     */
+    private function get_sicepat_services( int $product_id ) {
+
+        $services = array();
+
+        $sicepat_services = carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_services' );
+
+        foreach ( $sicepat_services as $sicepat_service ) {
+
+            if( $sicepat_service === 'cod_sicepat_service_cargo' ) {
+                $services[] = 'Cargo';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_best' ) {
+                $services[] = 'BEST';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_gokil' ) {
+                $services[] = 'GOKIL';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_kepo' ) {
+                $servvices[] = 'KEPO';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_halu' ) {
+                $services[] = 'Halu';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_reguler' ) {
+                $services[] = 'Regular';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_sds' ) {
+                $services[] = 'SDS';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_siunt' ) {
+                $services[] = 'SI UNTUNG';
             }
 
         }
@@ -458,9 +629,11 @@ class PaymentCOD {
     public function setup_product_cod_meta( \WP_Post $product, int $product_id ) {
 
         $product->cod = [
-            'cod-active' => boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_active' ) ),
-            'cod-weight' => intval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_weight' ) ),
-            'cod-origin' => carbon_get_post_meta( $product_id, 'shipment_cod_jne_origin' ),
+            'cod-active'         => boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) ),
+            'cod-jne-weight'     => intval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_weight' ) ),
+            'cod-jne-origin'     => carbon_get_post_meta( $product_id, 'shipment_cod_jne_origin' ),
+            'cod-sicepat-weight' => intval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_weight' ) ),
+            'cod-sicepat-origin' => carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_origin' ),
         ];
 
         return $product;
@@ -483,13 +656,9 @@ class PaymentCOD {
                         ->where( 'jne_destination_id', $destination->ID )
                         ->first();
 
-        error_log(print_r($origin->code, true));
-        error_log(print_r($destination->code, true));
-
         if( ! $get_tariff ) {
             $req_tariff_data = API_JNE::set_params()->get_tariff( $origin->code, $destination->code, $weight );
             // $req_tariff_data = API_JNE::set_params()->get_tariff( 'CGK10000', 'BDO10000', $weight );
-            // error_log(print_r($req_tariff_data, true));
             if( is_wp_error( $req_tariff_data ) ) {
                 return false;
             }
@@ -518,7 +687,7 @@ class PaymentCOD {
     public function set_shipping_options( $shipping_options, array $post_data ) {
 
         $product_id    = intval( $post_data['product_id'] );
-        $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_active' ) );
+        $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
 
         if(false !== $is_cod_active) :
 
@@ -558,14 +727,14 @@ class PaymentCOD {
             }
 
             // $get_destination      = JNE_Destination::where( 'district_name', $cod_destination_city['subdistrict_name'] )->first(); 
-            $is_cod_locally       = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_cover' ) );
-            $add_options          = true;
-            $fee_title            = '';
-            $product              = sejolisa_get_product( $post_data['product_id'] );
-            $product_weight       = intval( $product->shipping['weight'] );
-            $weight_cost          = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
-            $weight_cost          = ( 0 === $weight_cost ) ? 1 : $weight_cost;
-            $tariff               = $this->get_tariff_info( $origin, $destination, $weight_cost );
+            $is_cod_locally = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_cover' ) );
+            $add_options    = true;
+            $fee_title      = '';
+            $product        = sejolisa_get_product( $post_data['product_id'] );
+            $product_weight = intval( $product->shipping['weight'] );
+            $weight_cost    = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
+            $weight_cost    = ( 0 === $weight_cost ) ? 1 : $weight_cost;
+            $tariff         = $this->get_tariff_info( $origin, $destination, $weight_cost );
 
             if( true === $is_cod_locally ) :
                 
@@ -589,12 +758,12 @@ class PaymentCOD {
                             
                             $price = $rate->price * $weight_cost;
 
-                            if($rate->service_display == 'OKE'){
+                            if($rate->service_display === 'OKE'){
                                 $cod_title = 'JNE '.$rate->service_display. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
                                 $key_title = 'JNE '.$rate->service_display;
                                 $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 2-3 Hari)';
                             }
-                            elseif($rate->service_display == 'REG'){
+                            elseif($rate->service_display === 'REG'){
                                 $cod_title = 'JNE '.$rate->service_display. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
                                 $key_title = 'JNE '.$rate->service_display;
                                 $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 1-2 Hari)';
