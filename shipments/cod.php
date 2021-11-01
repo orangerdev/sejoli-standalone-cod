@@ -263,6 +263,25 @@ class COD {
                             'value' => true
                         )
                     )),
+
+                Field::make('text', 'shipment_cod_weight', __('Berat barang (dalam gram)', 'sejoli-standalone-cod'))
+                    ->set_attribute('type', 'number')
+                    ->set_attribute('min', 1000)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )
+                    )),
+
+                Field::make('select', 'shipment_cod_origin', __('Awal pengiriman', 'sejoli-standalone-cod'))
+                    ->set_options(array($this, 'get_subdistrict_options'))
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        )))
+                    ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
                 
                 Field::make('separator', 'sep_cod_services_setting', __('Pengaturan Layanan COD JNE', 'sejoli-standalone-cod'))->set_conditional_logic(array(
                     array(
@@ -283,25 +302,6 @@ class COD {
                             'value' => true
                         )
                     )),
-
-                Field::make('text', 'shipment_cod_jne_weight', __('Berat barang (dalam gram)', 'sejoli-standalone-cod'))
-                    ->set_attribute('type', 'number')
-                    ->set_attribute('min', 1000)
-                    ->set_conditional_logic(array(
-                        array(
-                            'field' => 'shipment_cod_services_active',
-                            'value' => true
-                        )
-                    )),
-
-                Field::make('select', 'shipment_cod_jne_origin', __('Awal pengiriman', 'sejoli-standalone-cod'))
-                    ->set_options(array($this, 'get_subdistrict_options'))
-                    ->set_conditional_logic(array(
-                        array(
-                            'field' => 'shipment_cod_services_active',
-                            'value' => true
-                        )))
-                    ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
 
                 Field::make('text', 'shipment_cod_jne_markup_label', __('Label Biaya Markup COD JNE', 'sejoli-standalone-cod'))
                     ->set_default_value(__('Biaya COD JNE', 'sejoli-standalone-cod'))
@@ -347,24 +347,24 @@ class COD {
                         )
                     )),
 
-                Field::make('text', 'shipment_cod_sicepat_weight', __('Berat barang (dalam gram)', 'sejoli-standalone-cod'))
-                    ->set_attribute('type', 'number')
-                    ->set_attribute('min', 1000)
-                    ->set_conditional_logic(array(
-                        array(
-                            'field' => 'shipment_cod_services_active',
-                            'value' => true
-                        )
-                    )),
+                // Field::make('text', 'shipment_cod_sicepat_weight', __('Berat barang (dalam gram)', 'sejoli-standalone-cod'))
+                //     ->set_attribute('type', 'number')
+                //     ->set_attribute('min', 1000)
+                //     ->set_conditional_logic(array(
+                //         array(
+                //             'field' => 'shipment_cod_services_active',
+                //             'value' => true
+                //         )
+                //     )),
 
-                Field::make('select', 'shipment_cod_sicepat_origin', __('Awal pengiriman', 'sejoli-standalone-cod'))
-                    ->set_options(array($this, 'get_subdistrict_options'))
-                    ->set_conditional_logic(array(
-                        array(
-                            'field' => 'shipment_cod_services_active',
-                            'value' => true
-                        )))
-                    ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
+                // Field::make('select', 'shipment_cod_sicepat_origin', __('Awal pengiriman', 'sejoli-standalone-cod'))
+                //     ->set_options(array($this, 'get_subdistrict_options'))
+                //     ->set_conditional_logic(array(
+                //         array(
+                //             'field' => 'shipment_cod_services_active',
+                //             'value' => true
+                //         )))
+                //     ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
 
                 Field::make('text', 'shipment_cod_sicepat_markup_label', __('Label Biaya Markup COD SiCepat', 'sejoli-standalone-cod'))
                     ->set_default_value(__('Biaya COD SiCepat', 'sejoli-standalone-cod'))
@@ -489,11 +489,9 @@ class COD {
     public function setup_product_cod_meta( \WP_Post $product, int $product_id ) {
 
         $product->cod = [
-            'cod-active'         => boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) ),
-            'cod-jne-weight'     => intval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_weight' ) ),
-            'cod-jne-origin'     => carbon_get_post_meta( $product_id, 'shipment_cod_jne_origin' ),
-            'cod-sicepat-weight' => intval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_weight' ) ),
-            'cod-sicepat-origin' => carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_origin' ),
+            'cod-active' => boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) ),
+            'cod-weight' => intval( carbon_get_post_meta( $product_id, 'shipment_cod_weight' ) ),
+            'cod-origin' => carbon_get_post_meta( $product_id, 'shipment_cod_origin' ),
         ];
 
         return $product;
@@ -551,7 +549,7 @@ class COD {
 
         if(false !== $is_cod_active) :
 
-            $cod_origin           = carbon_get_post_meta( $product_id, 'shipment_cod_jne_origin');
+            $cod_origin           = carbon_get_post_meta( $product_id, 'shipment_cod_origin');
             $cod_origin_city      = $this->get_subdistrict_detail( $cod_origin );
             // $get_origin           = JNE_Origin::where( 'name', $cod_origin_city['city'] )->first();
 

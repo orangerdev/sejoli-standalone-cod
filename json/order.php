@@ -103,7 +103,6 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
         $response = sejolisa_get_order(['ID' => $params['invoice_number'] ]);
         if( false !== $response['valid'] ) :
-
             $data            = $response['orders'];
             $product_id      = $data['product_id'];
             $user_id         = $data['user_id'];

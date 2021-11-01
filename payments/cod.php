@@ -20,7 +20,7 @@ final class SejoliCOD extends \SejoliSA\Payment {
      * @since 1.0.0
      * @var float
      */
-    protected $unique_code = 0.0;
+    protected $markup_price = 0.0;
 
     /**
      * Order price
@@ -64,7 +64,7 @@ final class SejoliCOD extends \SejoliSA\Payment {
                 $table->integer('order_id');
                 $table->integer('user_id')->nullable();
                 $table->float('total', 12, 2);
-                $table->integer('unique_code');
+                $table->integer('markup_price');
                 $table->text('meta_data');
             });
         endif;

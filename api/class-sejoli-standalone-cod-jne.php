@@ -43,14 +43,9 @@ class JNE extends \Sejoli_Standalone_Cod\API {
      *
      * @since   1.0.0
      */
-	public static function set_live_data() {
-		$username 	= 'SEJOLI';
-		$api_key 	= '4cde0a5db48339928b72b3dcba16b0ae';
+	public function set_live_data() {
 
-		self::$body = array(
-			'username' => $username,
-			'api_key'  => $api_key
-		);
+
 	}
 
 	/**
@@ -60,7 +55,7 @@ class JNE extends \Sejoli_Standalone_Cod\API {
      *
      * @return 	(static) return an instance of static class
      */
-	public static function set_params( $is_sandbox = false ) {
+	public static function set_params( $is_sandbox = true ) {
 		self::$headers = [
 			'Content-Type' => 'application/x-www-form-urlencoded',
 			'Accept' 	   => 'application/json'
@@ -101,7 +96,7 @@ class JNE extends \Sejoli_Standalone_Cod\API {
      */
 	public static function get_origin() {
 		try {
-			self::$endpoint = 'http://apiv2.jne.co.id:10101/insert/getorigin';
+			self::$endpoint = 'http://apiv2.jne.co.id:10102/insert/getorigin';
 			self::$method 	= 'POST';
 
 			$get_response 	= self::do_request();
@@ -138,7 +133,7 @@ class JNE extends \Sejoli_Standalone_Cod\API {
      */
 	public function get_destination() {
 		try {
-			self::$endpoint = 'http://apiv2.jne.co.id:10101/insert/getdestination';
+			self::$endpoint = 'http://apiv2.jne.co.id:10102/insert/getdestination';
 			self::$method 	= 'POST';
 
 			$get_response 	= self::do_request();
@@ -179,7 +174,7 @@ class JNE extends \Sejoli_Standalone_Cod\API {
      */
 	public function get_tariff( string $origin, string $destination, int $weight = 1 ) {
 		try {
-			self::$endpoint = 'http://apiv2.jne.co.id:10101/tracing/api/pricedev';
+			self::$endpoint = 'http://apiv2.jne.co.id:10102/tracing/api/pricedev';
 			self::$method 	= 'POST';
 			self::$body 	= array_merge( self::$body, [
 				'from'		=> $origin,
@@ -231,13 +226,16 @@ class JNE extends \Sejoli_Standalone_Cod\API {
      * @return 	(array|WP_Error) The response array or a WP_Error on failure
      */
 	public function get_airwaybill( int $order_id, string $shipper_name, string $shipper_addr1, string $shipper_addr2, string $shipper_city, string $shipper_region, int $shipper_zip, string $shipper_phone, string $receiver_name, string $receiver_addr1, string $receiver_addr2, string $receiver_city, string $receiver_region, int $receiver_zip, string $receiver_phone, int $qty, int $weight, string $goodsdesc, int $goodsvalue, int $goodstype, string $insurance, string $origin, string $destination, string $service, string $codflag, int $codamount ) {
+
+		$orderIdRand = random_int(100000, 999999);
+
 		try {
-			self::$endpoint 	= 'http://apiv2.jne.co.id:10101/tracing/api/generatecnote';
+			self::$endpoint 	= 'http://apiv2.jne.co.id:10102/tracing/api/generatecnote';
 			self::$method 		= 'POST';
 			self::$body 		= array_merge( self::$body, [
 				'OLSHOP_BRANCH'			 => 'CGK000',
 				'OLSHOP_CUST'			 => '10950700',
-				'OLSHOP_ORDERID'		 => $order_id,
+				'OLSHOP_ORDERID'		 => $order_id.$orderIdRand,
 				'OLSHOP_SHIPPER_NAME'	 => $shipper_name,
 				'OLSHOP_SHIPPER_ADDR1'	 => $shipper_addr1,
 				'OLSHOP_SHIPPER_ADDR2'	 => $shipper_addr2,
@@ -277,7 +275,6 @@ class JNE extends \Sejoli_Standalone_Cod\API {
 					if( $data = self::get_valid_body_object( $get_response ) ) :
 
 						if( isset( $data->detail ) ) {
-
 							return $data->detail;
 						}
 
@@ -309,8 +306,8 @@ class JNE extends \Sejoli_Standalone_Cod\API {
      */
 	public function get_tracking(string $tracking_number) {
 		try {
-			self::$endpoint = 'http://apiv2.jne.co.id:10101/tracing/api/list/v1/cnote/'.$tracking_number;
-			// self::$endpoint = 'http://apiv2.jne.co.id:10102/tracing/api/list/cnoteretails/cnote/4808012000000159';
+			// self::$endpoint = 'http://apiv2.jne.co.id:10102/tracing/api/list/cnoteretails/cnote/'.$tracking_number;
+			self::$endpoint = 'http://apiv2.jne.co.id:10102/tracing/api/list/cnoteretails/cnote/4808012000000159';
 			self::$method 	= 'POST';
 
 			$get_response 	= self::do_request();
