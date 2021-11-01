@@ -4,7 +4,7 @@ namespace Sejoli_Standalone_Cod\Admin;
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
-class ShipmentCOD {
+class Shipment {
 
 	/**
 	 * The ID of this plugin.
@@ -25,14 +25,6 @@ class ShipmentCOD {
 	private $version;
 
 	/**
-	 * Shipping libraries data
-	 * @since	1.2.0
-	 * @access 	protected
-	 * @var 	array
-	 */
-	protected $libraries = array();
-
-	/**
 	 * Does order need shipment?
 	 * @since 	1.0.0
 	 * @var 	boolean
@@ -50,19 +42,6 @@ class ShipmentCOD {
 
 		$this->plugin_name = $plugin_name;
 		$this->version 	   = $version;
-
-	}
-
-	/**
-	 * Register shipment libraries
-	 * Hooked via action plugins_loaded, priority 100
-	 * @since 	1.2.0
-	 * @return 	void
-	 */
-	public function register_libraries() {
-
-		require_once( SEJOLI_STANDALONE_COD_DIR . 'shipments/cod.php');
-		$this->libraries['cod-jne']	= new \Sejoli_Standalone_Cod\ShipmentCOD\PaymentCOD;
 
 	}
 

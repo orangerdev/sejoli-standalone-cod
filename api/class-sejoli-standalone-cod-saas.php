@@ -363,6 +363,8 @@ class SCOD {
 				return new \WP_Error( 'invalid_api_params', 'Store account is invalid.' );
 			}
 
+			$product_id = $body_params['invoice_number'];
+
 			//Always validate token first before doing request
 			if( $token = $this->get_token() ) {
 
@@ -384,8 +386,8 @@ class SCOD {
 						if( $shipping_method_instance_id ) {
 							
 							$shipping_instance = new Shipping_Method( $shipping_method_instance_id );
-							$username = $shipping_instance->get_option( 'scod_username' );
-							$password = $shipping_instance->get_option( 'scod_password' );
+							$username = $shipping_instance->carbon_get_post_meta($product_id, 'sejoli_scod_username'); //$shipping_instance->get_option( 'scod_username' );
+							$password = $shipping_instance->carbon_get_post_meta($product_id, 'sejoli_scod_password'); //$shipping_instance->get_option( 'scod_password' );
 
 							if( $username && $password ) {
 								$token = $this->get_new_token( $username, $password );

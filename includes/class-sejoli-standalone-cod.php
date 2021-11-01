@@ -80,6 +80,7 @@ class Sejoli_Standalone_Cod {
 		$this->define_public_hooks();
 		$this->define_json_hooks();
 		$this->define_shipment_hooks();
+		$this->define_payment_hooks();
 
 	}
 
@@ -171,6 +172,7 @@ class Sejoli_Standalone_Cod {
 		 */
 		require_once SEJOLI_STANDALONE_COD_DIR . 'admin/class-sejoli-standalone-cod-admin.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'admin/shipment.php';
+		require_once SEJOLI_STANDALONE_COD_DIR . 'admin/payment.php';
 
 		/**
 		 * The class responsible for defining all actions that work for shipment functions
@@ -220,9 +222,8 @@ class Sejoli_Standalone_Cod {
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_scripts' );
 
-		$shipment = new Sejoli_Standalone_Cod\Admin\ShipmentCOD( $this->get_plugin_name(), $this->get_version() );
+		$shipment = new Sejoli_Standalone_Cod\Admin\Shipment( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'plugins_loaded',							  $shipment, 'register_libraries', 10);
 		$this->loader->add_filter( 'sejoli/admin/js-localize-data',		 	      $shipment, 'set_localize_js_var', 10);
 		$this->loader->add_action( 'carbon_fields_theme_options_container_saved', $shipment, 'delete_cache_data', 10);
 
@@ -270,15 +271,25 @@ class Sejoli_Standalone_Cod {
 	 */
 	private function define_shipment_hooks() {
 
-		$shipment = new Sejoli_Standalone_Cod\ShipmentCOD\PaymentCOD();
+		$cod = new Sejoli_Standalone_Cod\Shipment\COD();
 
-		$this->loader->add_filter( 'sejoli/shipment/options',  $shipment, 'set_shipping_options',        10, 2);
-        $this->loader->add_filter( 'sejoli/product/fields',    $shipment, 'set_product_shipping_fields', 36);
-        $this->loader->add_action( 'sejoli/product/meta-data', $shipment, 'setup_product_cod_meta',      10, 2);
+		$this->loader->add_filter( 'sejoli/shipment/options',  $cod, 'set_shipping_options',        10, 2);
+        $this->loader->add_filter( 'sejoli/product/fields',    $cod, 'set_product_shipping_fields', 36);
+        $this->loader->add_action( 'sejoli/product/meta-data', $cod, 'setup_product_cod_meta',      10, 2);
 
-        // Payment Method
-        $this->loader->add_action('admin_init', $shipment, 'register_transaction_table', 1);
-        $this->loader->add_filter('sejoli/payment/payment-options', $shipment, 'add_payment_options' );
+	}
+
+	/**
+	 * Register all of the hooks related to payment request
+	 *
+	 * @since 	 1.0.0
+	 * @access 	 private
+	 */
+	private function define_payment_hooks() {
+
+		$payment = new Sejoli_Standalone_Cod\Admin\Payment( $this->get_plugin_name(), $this->get_version() );
+
+		$this->loader->add_filter('sejoli/payment/available-libraries',	$payment, 'register_libraries', 10);
 
 	}
 
