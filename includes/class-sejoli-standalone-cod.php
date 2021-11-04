@@ -273,7 +273,8 @@ class Sejoli_Standalone_Cod {
 
 		$cod = new Sejoli_Standalone_Cod\Shipment\COD();
 
-		$this->loader->add_filter( 'sejoli/shipment/options',  $cod, 'set_shipping_options',        10, 2);
+		$this->loader->add_filter( 'sejoli/shipment/options',  $cod, 'set_shipping_jne_options',        10, 2);
+		$this->loader->add_filter( 'sejoli/shipment/options',  $cod, 'set_shipping_sicepat_options',        10, 2);
         $this->loader->add_filter( 'sejoli/product/fields',    $cod, 'set_product_shipping_fields', 36);
         $this->loader->add_action( 'sejoli/product/meta-data', $cod, 'setup_product_cod_meta',      10, 2);
 
