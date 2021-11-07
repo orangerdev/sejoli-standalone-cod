@@ -5,6 +5,7 @@ use \WeDevs\ORM\Eloquent\Facades\DB;
 use Sejoli_Standalone_Cod\API\JNE as API_JNE;
 use Sejoli_Standalone_Cod\Model\JNE\Origin as JNE_Origin;
 use Sejoli_Standalone_Cod\Model\JNE\Destination as JNE_Destination;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 Class Order extends \Sejoli_Standalone_Cod\JSON {
 
@@ -65,130 +66,310 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
     }
 
     /**
-     * Process Pickup Generate Resi COD
+     * Process Pickup Generate Resi COD JNE
      * Hooked via wp_ajax_sejoli-order-pickup-generate-resi, priority 1
      * @since   1.0.0
      * @return  json
      */
     public function generate_pickup_resi() {
 
-        $params = wp_parse_args( $_POST, array(
-            'invoice_number' => NULL,
-            'shipperName'    => NULL,
-            'shipperAddr1'   => NULL,
-            'shipperAddr2'   => NULL,
-            'shipperCity'    => NULL,
-            'shipperRegion'  => NULL,
-            'shipperZip'     => NULL,
-            'shipperPhone'   => NULL,
-            'receiverName'   => NULL,
-            'receiverAddr1'  => NULL,
-            'receiverAddr2'  => NULL,
-            'receiverCity'   => NULL,
-            'receiverRegion' => NULL,
-            'receiverZip'    => NULL,
-            'receiverPhone'  => NULL,
-            'qty'            => NULL,
-            'weight'         => NULL,
-            'goodsDesc'      => NULL,
-            'goodsValue'     => 1000,
-            'goodsType'      => 1,
-            'insurance'      => "N",
-            'origin'         => NULL,
-            'destination'    => NULL,
-            'service'        => NULL,
-            'codflag'        => "YES",
-            'codAmount'      => NULL,
-            'nonce'          => NULL
+        $gettingID = wp_parse_args( $_POST, array(
+            'invoice_number' => NULL
         ));
 
-        $response = sejolisa_get_order(['ID' => $params['invoice_number'] ]);
-        if( false !== $response['valid'] ) :
-            $data            = $response['orders'];
-            $product_id      = $data['product_id'];
-            $user_id         = $data['user_id'];
-            $payment_gateway = $data['payment_gateway'];
-            $qty             = $data['quantity'];
-            $weight          = $data['product']->cod['cod-weight'];
-            $weight_cost     = (int) round((intval($qty) * $weight) / 1000);
-            $weight_cost     = (0 === $weight_cost) ? 1 : $weight_cost;
-            $type_product    = $data['type'];
-            $shipping_name   = $data['meta_data']['shipping_data']['service'];
-            if($shipping_name == "JNE REG") {
-                $shipping_service = "REG";
-            } elseif($shipping_name == "JNE OKE") {
-                $shipping_service = "OKE";
-            } else {
-                $shipping_service = "JTR";
-            }
-            $receiver_destination_id   = $data['meta_data']['shipping_data']['district_id'];
-            $receiver_destination_city = $this->get_subdistrict_detail($receiver_destination_id);
-            $receiver_destination      = JNE_Destination::where( 'city_id', $receiver_destination_city['city_id'] )->first();
-            $receiver_name             = $data['meta_data']['shipping_data']['receiver'];
-            $receiver_address          = $data['meta_data']['shipping_data']['address'];
-            $receiver_zip              = '0000';
-            $receiver_phone            = $data['meta_data']['shipping_data']['phone'];
-            $shipping_cost             = $data['meta_data']['shipping_data']['cost'];
-            $product_name              = $data['product']->post_title;
-            $product_price             = $data['product']->price;
-            $product_type              = $data['product']->type;
-            $shipper_origin_id         = $data['product']->cod['cod-origin'];
-            $shipper_origin_city       = $this->get_subdistrict_detail($shipper_origin_id);
-            $shipper_origin            = JNE_Origin::where( 'city_id', $shipper_origin_city['city_id'] )->first(); 
-            $shipper_name              = carbon_get_post_meta($product_id, 'sejoli_store_name');
-            $shipper_address           = $data['meta_data']['shipping_data']['address'];
-            $shipper_zip               = '0000';
-            $shipper_phone             = carbon_get_post_meta($product_id, 'sejoli_store_phone');
-            $params['shipperName']     = $shipper_name;
-            $params['shipperAddr1']    = $shipper_origin_city['subdistrict_name'];
-            $params['shipperAddr2']    = $shipper_origin_city['subdistrict_name'];
-            $params['shipperCity']     = $shipper_origin_city['type'].' '.$shipper_origin_city['city'];
-            $params['shipperRegion']   = $shipper_origin_city['province'];
-            $params['shipperZip']      = $shipper_zip;
-            $params['shipperPhone']    = $shipper_phone;
-            $params['receiverName']    = $receiver_name;
-            $params['receiverAddr1']   = $receiver_address;
-            $params['receiverAddr2']   = $receiver_address;
-            $params['receiverCity']    = $receiver_destination_city['type'].' '.$receiver_destination_city['city'];
-            $params['receiverRegion']  = $receiver_destination_city['province'];
-            $params['receiverZip']     = $receiver_zip;
-            $params['receiverPhone']   = $receiver_phone;
-            $params['qty']             = $qty;
-            $params['weight']          = $weight_cost;
-            $params['goodsDesc']       = $product_name;
-            $params['origin']          = $shipper_origin->code;
-            $params['destination']     = $receiver_destination->code;
-            $params['service']         = $shipping_service;
-            $params['codAmount']       = $shipping_cost;
- 
+        error_log(print_r($gettingID, true));
+
+        $response = sejolisa_get_order(['ID' => $gettingID['invoice_number'] ]);
+        $data = $response['orders'];
+        $checkCourierService = $data['meta_data']['shipping_data']['service'];
+
+        if (strpos( $checkCourierService, 'JNE' ) !== false) :
+
+            $params = wp_parse_args( $_POST, array(
+                'invoice_number' => NULL,
+                'shipperName'    => NULL,
+                'shipperAddr1'   => NULL,
+                'shipperAddr2'   => NULL,
+                'shipperCity'    => NULL,
+                'shipperRegion'  => NULL,
+                'shipperZip'     => NULL,
+                'shipperPhone'   => NULL,
+                'receiverName'   => NULL,
+                'receiverAddr1'  => NULL,
+                'receiverAddr2'  => NULL,
+                'receiverCity'   => NULL,
+                'receiverRegion' => NULL,
+                'receiverZip'    => NULL,
+                'receiverPhone'  => NULL,
+                'qty'            => NULL,
+                'weight'         => NULL,
+                'goodsDesc'      => NULL,
+                'goodsValue'     => 1000,
+                'goodsType'      => 1,
+                'insurance'      => "N",
+                'origin'         => NULL,
+                'destination'    => NULL,
+                'service'        => NULL,
+                'codflag'        => "YES",
+                'codAmount'      => NULL,
+                'nonce'          => NULL
+            ));
+
+            if( false !== $response['valid'] ) :
+                $product_id      = $data['product_id'];
+                $user_id         = $data['user_id'];
+                $payment_gateway = $data['payment_gateway'];
+                $qty             = $data['quantity'];
+                $weight          = $data['product']->cod['cod-weight'];
+                $weight_cost     = (int) round((intval($qty) * $weight) / 1000);
+                $weight_cost     = (0 === $weight_cost) ? 1 : $weight_cost;
+                $type_product    = $data['type'];
+                $shipping_name   = $data['meta_data']['shipping_data']['service'];
+                if($shipping_name == "JNE REG") {
+                    $shipping_service = "REG";
+                } elseif($shipping_name == "JNE OKE") {
+                    $shipping_service = "OKE";
+                } else {
+                    $shipping_service = "JTR";
+                }
+                $receiver_destination_id   = $data['meta_data']['shipping_data']['district_id'];
+                $receiver_destination_city = $this->get_subdistrict_detail($receiver_destination_id);
+                $getDestCode = DB::table( 'sejolisa_shipping_jne_destination' )
+                        ->where( 'city_id', $receiver_destination_city['city_id'] )
+                        ->where( 'district_id', $receiver_destination_city['subdistrict_id'] )
+                        ->get();        
+
+                if( ! $getDestCode ) {
+                    return false;
+                }
+
+                $receiver_destination = $getDestCode[0];
+
+                if( ! $receiver_destination ) {
+                    return false;
+                }
+                // $receiver_destination      = JNE_Destination::where( 'city_id', $receiver_destination_city['city_id'] )->first();
+                $receiver_name             = $data['meta_data']['shipping_data']['receiver'];
+                $receiver_address          = $data['meta_data']['shipping_data']['address'];
+                $receiver_zip              = '0000';
+                $receiver_phone            = $data['meta_data']['shipping_data']['phone'];
+                $shipping_cost             = $data['meta_data']['shipping_data']['cost'];
+                $product_name              = $data['product']->post_title;
+                $product_price             = $data['product']->price;
+                $product_type              = $data['product']->type;
+                $shipper_origin_id         = $data['product']->cod['cod-origin'];
+                $shipper_origin_city       = $this->get_subdistrict_detail($shipper_origin_id);
+                $getOriginCode = DB::table( 'sejolisa_shipping_jne_origin' )
+                        ->where( 'city_id', $shipper_origin_city['city_id'] )
+                        ->get();        
+
+                if( ! $getOriginCode ) {
+                    return false;
+                }
+
+                $shipper_origin = $getOriginCode[0];
+
+                if( ! $shipper_origin ) {
+                    return false;
+                }
+                // $shipper_origin            = JNE_Origin::where( 'city_id', $shipper_origin_city['city_id'] )->first(); 
+                $shipper_name              = carbon_get_post_meta($product_id, 'sejoli_store_name');
+                $shipper_address           = $data['meta_data']['shipping_data']['address'];
+                $shipper_zip               = '0000';
+                $shipper_phone             = carbon_get_post_meta($product_id, 'sejoli_store_phone');
+                $params['shipperName']     = $shipper_name;
+                $params['shipperAddr1']    = $shipper_origin_city['subdistrict_name'];
+                $params['shipperAddr2']    = $shipper_origin_city['subdistrict_name'];
+                $params['shipperCity']     = $shipper_origin_city['type'].' '.$shipper_origin_city['city'];
+                $params['shipperRegion']   = $shipper_origin_city['province'];
+                $params['shipperZip']      = $shipper_zip;
+                $params['shipperPhone']    = $shipper_phone;
+                $params['receiverName']    = $receiver_name;
+                $params['receiverAddr1']   = $receiver_address;
+                $params['receiverAddr2']   = $receiver_address;
+                $params['receiverCity']    = $receiver_destination_city['type'].' '.$receiver_destination_city['city'];
+                $params['receiverRegion']  = $receiver_destination_city['province'];
+                $params['receiverZip']     = $receiver_zip;
+                $params['receiverPhone']   = $receiver_phone;
+                $params['qty']             = $qty;
+                $params['weight']          = $weight_cost;
+                $params['goodsDesc']       = $product_name;
+                $params['origin']          = $shipper_origin->code;
+                $params['destination']     = $receiver_destination->code;
+                $params['service']         = $shipping_service;
+                $params['codAmount']       = $shipping_cost;
+     
+            endif;
+
+            $respond = [
+                'valid'   => false,
+                'message' => NULL
+            ];
+
+            if( wp_verify_nonce( $params['nonce'], 'sejoli-order-pickup-generate-resi') ) :
+
+                unset( $params['nonce'] );
+
+                $do_update = API_JNE::set_params()->get_airwaybill( $params['invoice_number'], $params['shipperName'], $params['shipperAddr1'], $params['shipperAddr2'], $params['shipperCity'], $params['shipperRegion'], $params['shipperZip'], $params['shipperPhone'], $params['receiverName'], $params['receiverAddr1'], $params['receiverAddr2'], $params['receiverCity'], $params['receiverRegion'], $params['receiverZip'], $params['receiverPhone'], $params['qty'], $params['weight'], $params['goodsDesc'], $params['goodsValue'], $params['goodsType'], $params['insurance'], $params['origin'], $params['destination'], $params['service'], $params['codflag'], $params['codAmount'] );
+
+                if ( ! is_wp_error( $do_update ) ) {
+
+                    $respond['valid']  = true;
+                    $number_resi = $do_update[0]->cnote_no;
+
+                } else {
+
+                    $respond['message'] = $do_update->get_error_message();
+                }
+
+            endif;
+            
+            echo wp_send_json( $number_resi );
+
+        elseif (strpos( $checkCourierService, 'SICEPAT' ) !== false) :
+
+            $params = wp_parse_args( $_POST, array(
+                'invoice_number' => NULL,
+                'shipperName'    => NULL,
+                'shipperAddr1'   => NULL,
+                'shipperAddr2'   => NULL,
+                'shipperCity'    => NULL,
+                'shipperRegion'  => NULL,
+                'shipperZip'     => NULL,
+                'shipperPhone'   => NULL,
+                'receiverName'   => NULL,
+                'receiverAddr1'  => NULL,
+                'receiverAddr2'  => NULL,
+                'receiverCity'   => NULL,
+                'receiverRegion' => NULL,
+                'receiverZip'    => NULL,
+                'receiverPhone'  => NULL,
+                'qty'            => NULL,
+                'weight'         => NULL,
+                'goodsDesc'      => NULL,
+                'goodsValue'     => 1000,
+                'goodsType'      => 1,
+                'insurance'      => "N",
+                'origin'         => NULL,
+                'destination'    => NULL,
+                'service'        => NULL,
+                'codflag'        => "YES",
+                'codAmount'      => NULL,
+                'nonce'          => NULL
+            ));
+
+            if( false !== $response['valid'] ) :
+                $product_id      = $data['product_id'];
+                $user_id         = $data['user_id'];
+                $payment_gateway = $data['payment_gateway'];
+                $qty             = $data['quantity'];
+                $weight          = $data['product']->cod['cod-weight'];
+                $weight_cost     = (int) round((intval($qty) * $weight) / 1000);
+                $weight_cost     = (0 === $weight_cost) ? 1 : $weight_cost;
+                $type_product    = $data['type'];
+                $shipping_name   = $data['meta_data']['shipping_data']['service'];
+                if($shipping_name == "JNE REG") {
+                    $shipping_service = "REG";
+                } elseif($shipping_name == "JNE OKE") {
+                    $shipping_service = "OKE";
+                } else {
+                    $shipping_service = "JTR";
+                }
+                $receiver_destination_id   = $data['meta_data']['shipping_data']['district_id'];
+                $receiver_destination_city = $this->get_subdistrict_detail($receiver_destination_id);
+                $getDestCode = DB::table( 'sejolisa_shipping_jne_destination' )
+                        ->where( 'city_id', $receiver_destination_city['city_id'] )
+                        ->where( 'district_id', $receiver_destination_city['subdistrict_id'] )
+                        ->get();        
+
+                if( ! $getDestCode ) {
+                    return false;
+                }
+
+                $receiver_destination = $getDestCode[0];
+
+                if( ! $receiver_destination ) {
+                    return false;
+                }
+                // $receiver_destination      = JNE_Destination::where( 'city_id', $receiver_destination_city['city_id'] )->first();
+                $receiver_name             = $data['meta_data']['shipping_data']['receiver'];
+                $receiver_address          = $data['meta_data']['shipping_data']['address'];
+                $receiver_zip              = '0000';
+                $receiver_phone            = $data['meta_data']['shipping_data']['phone'];
+                $shipping_cost             = $data['meta_data']['shipping_data']['cost'];
+                $product_name              = $data['product']->post_title;
+                $product_price             = $data['product']->price;
+                $product_type              = $data['product']->type;
+                $shipper_origin_id         = $data['product']->cod['cod-origin'];
+                $shipper_origin_city       = $this->get_subdistrict_detail($shipper_origin_id);
+                $getOriginCode = DB::table( 'sejolisa_shipping_jne_origin' )
+                        ->where( 'city_id', $shipper_origin_city['city_id'] )
+                        ->get();        
+
+                if( ! $getOriginCode ) {
+                    return false;
+                }
+
+                $shipper_origin = $getOriginCode[0];
+
+                if( ! $shipper_origin ) {
+                    return false;
+                }
+                // $shipper_origin            = JNE_Origin::where( 'city_id', $shipper_origin_city['city_id'] )->first(); 
+                $shipper_name              = carbon_get_post_meta($product_id, 'sejoli_store_name');
+                $shipper_address           = $data['meta_data']['shipping_data']['address'];
+                $shipper_zip               = '0000';
+                $shipper_phone             = carbon_get_post_meta($product_id, 'sejoli_store_phone');
+                $params['shipperName']     = $shipper_name;
+                $params['shipperAddr1']    = $shipper_origin_city['subdistrict_name'];
+                $params['shipperAddr2']    = $shipper_origin_city['subdistrict_name'];
+                $params['shipperCity']     = $shipper_origin_city['type'].' '.$shipper_origin_city['city'];
+                $params['shipperRegion']   = $shipper_origin_city['province'];
+                $params['shipperZip']      = $shipper_zip;
+                $params['shipperPhone']    = $shipper_phone;
+                $params['receiverName']    = $receiver_name;
+                $params['receiverAddr1']   = $receiver_address;
+                $params['receiverAddr2']   = $receiver_address;
+                $params['receiverCity']    = $receiver_destination_city['type'].' '.$receiver_destination_city['city'];
+                $params['receiverRegion']  = $receiver_destination_city['province'];
+                $params['receiverZip']     = $receiver_zip;
+                $params['receiverPhone']   = $receiver_phone;
+                $params['qty']             = $qty;
+                $params['weight']          = $weight_cost;
+                $params['goodsDesc']       = $product_name;
+                $params['origin']          = $shipper_origin->code;
+                $params['destination']     = $receiver_destination->code;
+                $params['service']         = $shipping_service;
+                $params['codAmount']       = $shipping_cost;
+     
+            endif;
+
+            $respond = [
+                'valid'   => false,
+                'message' => NULL
+            ];
+
+            if( wp_verify_nonce( $params['nonce'], 'sejoli-order-pickup-generate-resi') ) :
+
+                unset( $params['nonce'] );
+
+                $do_update = API_JNE::set_params()->get_airwaybill( $params['invoice_number'], $params['shipperName'], $params['shipperAddr1'], $params['shipperAddr2'], $params['shipperCity'], $params['shipperRegion'], $params['shipperZip'], $params['shipperPhone'], $params['receiverName'], $params['receiverAddr1'], $params['receiverAddr2'], $params['receiverCity'], $params['receiverRegion'], $params['receiverZip'], $params['receiverPhone'], $params['qty'], $params['weight'], $params['goodsDesc'], $params['goodsValue'], $params['goodsType'], $params['insurance'], $params['origin'], $params['destination'], $params['service'], $params['codflag'], $params['codAmount'] );
+
+                if ( ! is_wp_error( $do_update ) ) {
+
+                    $respond['valid']  = true;
+                    $number_resi = $do_update[0]->cnote_no;
+
+                } else {
+
+                    $respond['message'] = $do_update->get_error_message();
+                }
+
+            endif;
+            
+            echo wp_send_json( $number_resi );
+
         endif;
-
-        error_log(print_r($data, true)); exit;
-
-        $respond = [
-            'valid'   => false,
-            'message' => NULL
-        ];
-
-        if( wp_verify_nonce( $params['nonce'], 'sejoli-order-pickup-generate-resi') ) :
-
-            unset( $params['nonce'] );
-
-            $do_update = API_JNE::set_params()->get_airwaybill( $params['invoice_number'], $params['shipperName'], $params['shipperAddr1'], $params['shipperAddr2'], $params['shipperCity'], $params['shipperRegion'], $params['shipperZip'], $params['shipperPhone'], $params['receiverName'], $params['receiverAddr1'], $params['receiverAddr2'], $params['receiverCity'], $params['receiverRegion'], $params['receiverZip'], $params['receiverPhone'], $params['qty'], $params['weight'], $params['goodsDesc'], $params['goodsValue'], $params['goodsType'], $params['insurance'], $params['origin'], $params['destination'], $params['service'], $params['codflag'], $params['codAmount'] );
-
-            if ( ! is_wp_error( $do_update ) ) {
-
-                $respond['valid']  = true;
-                $number_resi = $do_update[0]->cnote_no;
-
-            } else {
-
-                $respond['message'] = $do_update->get_error_message();
-            }
-
-        endif;
-        
-        echo wp_send_json( $number_resi );
 
     }
 
