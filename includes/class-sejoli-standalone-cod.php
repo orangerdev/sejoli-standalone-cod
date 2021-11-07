@@ -184,6 +184,7 @@ class Sejoli_Standalone_Cod {
 		 * side of the site.
 		 */
 		require_once SEJOLI_STANDALONE_COD_DIR . 'public/class-sejoli-standalone-cod-public.php';
+		require_once SEJOLI_STANDALONE_COD_DIR . 'public/shipment-tracking.php';
 
 		$this->loader = new Sejoli_Standalone_Cod_Loader();
 
@@ -242,6 +243,12 @@ class Sejoli_Standalone_Cod {
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $public, 'enqueue_scripts' );
+
+		$tracking = new Sejoli_Standalone_Cod\Front\ShipmentTracking( $this->get_plugin_name(), $this->get_version() );
+		// Shipment Tracking
+		$this->loader->add_action( 'init', $tracking, 'sejoli_init_tracking_shipment_shortcode' );
+		$this->loader->add_action( 'wp_ajax_nopriv_sejoli_shipment_tracking_result', $tracking, 'sejoli_shipment_tracking_result' );
+        $this->loader->add_action( 'wp_ajax_sejoli_shipment_tracking_result', $tracking, 'sejoli_shipment_tracking_result' );
 
 	}
 

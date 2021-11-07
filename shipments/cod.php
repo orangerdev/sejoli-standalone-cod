@@ -461,11 +461,11 @@ class COD {
             }
 
             if( $sicepat_service === 'cod_sicepat_service_halu' ) {
-                $services[] = 'Halu';
+                $services[] = 'HALU';
             }
 
             if( $sicepat_service === 'cod_sicepat_service_reguler' ) {
-                $services[] = 'Regular';
+                $services[] = 'REG';
             }
 
             if( $sicepat_service === 'cod_sicepat_service_sds' ) {
@@ -473,7 +473,7 @@ class COD {
             }
 
             if( $sicepat_service === 'cod_sicepat_service_siunt' ) {
-                $services[] = 'SI UNTUNG';
+                $services[] = 'SIUNT';
             }
 
         }
@@ -503,7 +503,7 @@ class COD {
     }
 
     /**
-     * Get tariff object
+     * Get tariff jne object
      *
      * @since   1.0.0
      *
@@ -519,6 +519,7 @@ class COD {
                         ->first();
 
         if( ! $get_tariff ) {
+        
             $req_tariff_data = API_JNE::set_params()->get_tariff( $origin->code, $destination->code, $weight );
             // $req_tariff_data = API_JNE::set_params()->get_tariff( 'CGK10000', 'BDO10000', $weight );
             if( is_wp_error( $req_tariff_data ) ) {
@@ -533,6 +534,7 @@ class COD {
             if( ! $get_tariff->save() ) {
                 return false;
             }
+        
         }
 
         return $get_tariff;
@@ -540,41 +542,43 @@ class COD {
     }
 
     /**
-         * Get tariff object
-         *
-         * @since   1.0.0
-         *
-         * @param   $origin         origin object to find
-         * @param   $destination    destination object to find
-         *
-         * @return  (Object|false)  returns an object on true, or false if fail
-         */
-        private function get_sicepat_tariff_info( $origin, $destination ) {
+     * Get tariff sicepat object
+     *
+     * @since   1.0.0
+     *
+     * @param   $origin         origin object to find
+     * @param   $destination    destination object to find
+     *
+     * @return  (Object|false)  returns an object on true, or false if fail
+     */
+    private function get_sicepat_tariff_info( $origin, $destination ) {
+        
+        $get_tariff = SICEPAT_Tariff::where( 'sicepat_origin_id', $origin->ID )
+                        ->where( 'sicepat_destination_id', $destination->ID )
+                        ->first();
+
+        if( ! $get_tariff ) {
+        
+            $req_tariff_data = API_SICEPAT::set_params()->get_tariff( $origin->origin_code, $destination->destination_code );
             
-            $get_tariff = SICEPAT_Tariff::where( 'sicepat_origin_id', $origin->ID )
-                            ->where( 'sicepat_destination_id', $destination->ID )
-                            ->first();
-
-            if( ! $get_tariff ) {
-                $req_tariff_data = API_SICEPAT::set_params()->get_tariff( $origin->origin_code, $destination->destination_code );
-                
-                if( is_wp_error( $req_tariff_data ) ) {
-                    return false;
-                }
-
-                $get_tariff                         = new SICEPAT_Tariff();
-                $get_tariff->sicepat_origin_id      = $origin->ID;
-                $get_tariff->sicepat_destination_id = $destination->ID;
-                $get_tariff->tariff_data            = $req_tariff_data;
-
-                if( ! $get_tariff->save() ) {
-                    return false;
-                }
+            if( is_wp_error( $req_tariff_data ) ) {
+                return false;
             }
 
-            return $get_tariff;
+            $get_tariff                         = new SICEPAT_Tariff();
+            $get_tariff->sicepat_origin_id      = $origin->ID;
+            $get_tariff->sicepat_destination_id = $destination->ID;
+            $get_tariff->tariff_data            = $req_tariff_data;
+
+            if( ! $get_tariff->save() ) {
+                return false;
+            }
         
         }
+
+        return $get_tariff;
+    
+    }
 
     /**
      * Set JNE COD shipping options
@@ -702,9 +706,8 @@ class COD {
 
         if(false !== $is_cod_active) :
 
-            $cod_origin           = carbon_get_post_meta( $product_id, 'shipment_cod_origin');
-            $cod_origin_city      = $this->get_subdistrict_detail( $cod_origin );
-            // $get_origin           = JNE_Origin::where( 'name', $cod_origin_city['city'] )->first();
+            $cod_origin      = carbon_get_post_meta( $product_id, 'shipment_cod_origin' );
+            $cod_origin_city = $this->get_subdistrict_detail( $cod_origin );
 
             $getOriginCode = DB::table( 'sejolisa_shipping_sicepat_origin' )
                     ->where( 'city_id', $cod_origin_city['city_id'] )
@@ -737,7 +740,6 @@ class COD {
                 return false;
             }
 
-            // $get_destination      = JNE_Destination::where( 'district_name', $cod_destination_city['subdistrict_name'] )->first(); 
             // $is_cod_locally = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_cover' ) );
             $add_options    = true;
             $fee_title      = '';
@@ -764,16 +766,17 @@ class COD {
 
                     foreach ( $tariff->tariff_data as $rate ) {
                         if( \in_array( $rate->service, $this->get_sicepat_services($product_id) ) ) {
+                            error_log(print_r($rate, true));
                             
                             $price = $rate->tariff * $weight_cost;
 
                             if($rate->service === 'SIUNT'){
-                                $cod_title = 'SICEPAT '.$rate->service;
+                                $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
                                 $key_title = 'SICEPAT '.$rate->service;
                                 $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 1-2 Hari)';
                             }
                             elseif($rate->service === 'GOKIL'){
-                                $cod_title = 'SICEPAT '.$rate->service;
+                                $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
                                 $key_title = 'SICEPAT '.$rate->service;
                                 $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 2-3 Hari)';
                             }

@@ -50,6 +50,33 @@
 	        }
 	    });
 
+	    $("#shipment-tracking-form").submit(function(event){
+            event.preventDefault();
+            
+           	let baseURL = sejoli_public.shipment_tracking.ajaxurl;
+	    	let nonce   = sejoli_public.shipment_tracking.nonce;
+
+	    	// Get detail request
+	    	$.ajax({
+	    		dataType: "json",
+                url : baseURL,
+                type : 'POST',
+                data : {
+                    shipmentNumber: $('#shipment-number').val(),
+                    nonce:  nonce
+                },
+                success : function(response) {
+                    console.log(response);
+                    $('#shipment-history').html(response);
+                    // window.location.reload();
+                },
+                error: function (request, status, error) {
+                    console.log(request);
+                    console.log(error);
+                }
+            });
+        });
+
     });
 
 })( jQuery );

@@ -99,6 +99,17 @@ class Front {
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/sejoli-standalone-cod-public.js', array( 'jquery' ), $this->version, false );
 
+		wp_localize_script( $this->plugin_name, 'sejoli_public', array(
+        	'ajax_url'	=> admin_url('admin-ajax.php'),
+			'shipment_tracking' => array(
+				'ajaxurl'	=> add_query_arg(array(
+						'action' => 'sejoli_shipment_tracking_result'
+					), admin_url('admin-ajax.php')
+				),
+				'nonce'	=> wp_create_nonce('sejoli_shipment_tracking_result')
+			)
+        ));
+
 	}
 
 }

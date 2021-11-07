@@ -3,6 +3,7 @@ namespace Sejoli_Standalone_Cod\JSON;
 
 use \WeDevs\ORM\Eloquent\Facades\DB;
 use Sejoli_Standalone_Cod\API\JNE as API_JNE;
+use Sejoli_Standalone_Cod\Model\JNE\Origin as JNE_Origin;
 use Sejoli_Standalone_Cod\Model\JNE\Destination as JNE_Destination;
 
 Class Order extends \Sejoli_Standalone_Cod\JSON {
@@ -93,8 +94,8 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             'goodsValue'     => 1000,
             'goodsType'      => 1,
             'insurance'      => "N",
-            'origin'         => "CGK10000",
-            'destination'    => "BDO10000",
+            'origin'         => NULL,
+            'destination'    => NULL,
             'service'        => NULL,
             'codflag'        => "YES",
             'codAmount'      => NULL,
@@ -122,7 +123,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             }
             $receiver_destination_id   = $data['meta_data']['shipping_data']['district_id'];
             $receiver_destination_city = $this->get_subdistrict_detail($receiver_destination_id);
-            $receiver_destination      = JNE_Destination::where( 'city_name', $receiver_destination_city['city'] )->first();
+            $receiver_destination      = JNE_Destination::where( 'city_id', $receiver_destination_city['city_id'] )->first();
             $receiver_name             = $data['meta_data']['shipping_data']['receiver'];
             $receiver_address          = $data['meta_data']['shipping_data']['address'];
             $receiver_zip              = '0000';
@@ -133,7 +134,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $product_type              = $data['product']->type;
             $shipper_origin_id         = $data['product']->cod['cod-origin'];
             $shipper_origin_city       = $this->get_subdistrict_detail($shipper_origin_id);
-            $shipper_origin            = JNE_Destination::where( 'district_name', $shipper_origin_city['subdistrict_name'] )->first(); 
+            $shipper_origin            = JNE_Origin::where( 'city_id', $shipper_origin_city['city_id'] )->first(); 
             $shipper_name              = carbon_get_post_meta($product_id, 'sejoli_store_name');
             $shipper_address           = $data['meta_data']['shipping_data']['address'];
             $shipper_zip               = '0000';
@@ -155,12 +156,14 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $params['qty']             = $qty;
             $params['weight']          = $weight_cost;
             $params['goodsDesc']       = $product_name;
-            // $params['origin']          = $shipper_origin->code;
-            // $params['destination']     = $receiver_destination->code;
+            $params['origin']          = $shipper_origin->code;
+            $params['destination']     = $receiver_destination->code;
             $params['service']         = $shipping_service;
             $params['codAmount']       = $shipping_cost;
  
         endif;
+
+        error_log(print_r($data, true)); exit;
 
         $respond = [
             'valid'   => false,
