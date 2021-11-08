@@ -45,36 +45,43 @@
     	let baseURL 	   = sejoli_cod_jne.pickup_generate_resi.ajaxurl;
     	let nonce 		   = sejoli_cod_jne.pickup_generate_resi.nonce;
 
-    	//Get detail request
-    	$.ajax({
-    		dataType: "json",
-            url : baseURL,
-            type: 'POST',
-            data: {
-                invoice_number: invoice_number,
-                nonce:  nonce
-            },
-            success : function(response) {
-            	console.log("RESI");
-            	console.log(response);
-                if(response == null) {
-                	alert('Gagal Mendapatkan No Resi!');
-                	window.location.reload();
-                } else {
-                	alert('No. Resi: ' + response);
-					$('.sejolisa-confirm-order-pickup').hide();
-					$('.noresi').val(response);
-					$('.label-resi').show();
-					$('.no-resi').html(response);
-					$('.sejolisa-confirm-order-shipping').attr('style', 'display: none !important');
-					$('.sejolisa-confirm-order-shipping').trigger("click");
-                }
-            },
-            error: function (request, status, error) {
-                console.log(error);
-            }
-        });
+    	if (confirm('Apakah Anda yakin ingin melakukan proses request pickup order id #'+invoice_number+'?')) {
+			// Save it!
+			console.log('Requesting Pickup Succesfull.');
 
+			//Get detail request
+	    	$.ajax({
+	    		dataType: "json",
+	            url : baseURL,
+	            type: 'POST',
+	            data: {
+	                invoice_number: invoice_number,
+	                nonce:  nonce
+	            },
+	            success : function(response) {
+	                if(response == null) {
+	                	alert('Gagal Mendapatkan No Resi!');
+	                	window.location.reload();
+	                } else {
+	                	alert('No. Resi: ' + response);
+						$('.sejolisa-confirm-order-pickup').hide();
+						$('.noresi').val(response);
+						$('.label-resi').show();
+						$('.no-resi').html(response);
+						$('.sejolisa-confirm-order-shipping').attr('style', 'display: none !important');
+						$('.sejolisa-confirm-order-shipping').trigger("click");
+	                }
+	            },
+	            error: function (request, status, error) {
+	                console.log(error);
+	            }
+	        });
+
+		} else {
+			// Do nothing!
+			console.log('Requesting Pickup Failed.');
+		}
+    	
 	});
 
 })( jQuery );
