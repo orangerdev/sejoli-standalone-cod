@@ -49,8 +49,6 @@ class Payment {
 		require_once( SEJOLI_STANDALONE_COD_DIR . 'payments/cod.php');
 		$libraries['cod'] = new \SejoliSA\Payment\SejoliCOD;
 
-		// error_log(print_r("COD", true));
-		// error_log(print_r($libraries, true));
 		return $libraries;
 
 	}

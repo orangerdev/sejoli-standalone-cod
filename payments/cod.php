@@ -80,12 +80,12 @@ final class SejoliCOD extends \SejoliSA\Payment {
      */
     public function add_payment_options($options = array()) {
 
-        $url        = $_SERVER['HTTP_REFERER'];
-        $product_id = url_to_postid( $url );
-        $active     = carbon_get_post_meta( $product_id, 'shipment_cod_services_active' );
-        $product    = sejolisa_get_product( $product_id );
+        $url           = $_SERVER['HTTP_REFERER'];
+        $product_id    = url_to_postid( $url );
+        $is_cod_active = carbon_get_post_meta( $product_id, 'shipment_cod_services_active' );
+        $product       = sejolisa_get_product( $product_id );
 
-        if( true === $active && $product->type === "physical" ) :
+        if( true === $is_cod_active && $product->type === "physical" ) :
 
             // Listing available payment channels from your payment gateways
             $methods = array(

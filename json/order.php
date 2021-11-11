@@ -504,10 +504,13 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
         
         if ( ! $order ) return;
 
-        if( $product->type === "physical" ) :
+        $is_cod_active = boolval( carbon_get_post_meta( $order['product_id'], 'shipment_cod_services_active' ) );
+        $product       = sejolisa_get_product( $order['product_id'] );
+
+        if( false !== $is_cod_active && $product->type === "physical" ) :
 
             $order_id                  = $order['ID'];
-            $product_id                = $order['product_id'];
+            $product_id                = intval( $order['product_id'] );
             $user_id                   = $order['user_id'];
             $payment_gateway           = $order['payment_gateway'];
             $qty                       = $order['quantity'];
