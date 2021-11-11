@@ -5,12 +5,8 @@ namespace Sejoli_Standalone_Cod\Shipment;
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 use \WeDevs\ORM\Eloquent\Facades\DB;
-use Sejoli_Standalone_Cod\Model\JNE\Origin as JNE_Origin;
-use Sejoli_Standalone_Cod\Model\JNE\Destination as JNE_Destination;
 use Sejoli_Standalone_Cod\Model\JNE\Tariff as JNE_Tariff;
 use Sejoli_Standalone_Cod\API\JNE as API_JNE;
-use Sejoli_Standalone_Cod\Model\SiCepat\Origin as SICEPAT_Origin;
-use Sejoli_Standalone_Cod\Model\SiCepat\Destination as SICEPAT_Destination;
 use Sejoli_Standalone_Cod\Model\SiCepat\Tariff as SICEPAT_Tariff;
 use Sejoli_Standalone_Cod\API\SiCepat as API_SICEPAT;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -591,8 +587,9 @@ class COD {
 
         $product_id    = intval( $post_data['product_id'] );
         $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
+        $product       = sejolisa_get_product( $product_id );
 
-        if(false !== $is_cod_active) :
+        if( false !== $is_cod_active && $product->type === "physical" ) :
 
             $cod_origin           = carbon_get_post_meta( $product_id, 'shipment_cod_origin');
             $cod_origin_city      = $this->get_subdistrict_detail( $cod_origin );
@@ -765,9 +762,9 @@ class COD {
                 if( is_array( $tariff->tariff_data ) && count( $tariff->tariff_data ) > 0 ) {
 
                     foreach ( $tariff->tariff_data as $rate ) {
+                        
                         if( \in_array( $rate->service, $this->get_sicepat_services($product_id) ) ) {
-                            error_log(print_r($rate, true));
-                            
+                                                        
                             $price = $rate->tariff * $weight_cost;
 
                             if($rate->service === 'SIUNT'){
@@ -785,6 +782,7 @@ class COD {
                             $shipping_options[$key_options] = $cod_title . $fee_title;
 
                         }
+
                     }
                 }
 

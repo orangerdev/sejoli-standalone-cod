@@ -29,14 +29,56 @@
 	 * practising this, we should strive to set a better example in our own work.
 	 */
 
-	 $(document).on('click', '.update-order', function(){
+	//  $(document).on('click', '.update-order', function(){
 		
-		if($('.sejolisa-confirm-order-pickup').length == 0){
+	// 	if($('.sejolisa-confirm-order-pickup').length == 0){
+	// 		var $appendElem = $('<a class="sejolisa-confirm-order-pickup ui primary button">Proses Pickup</a>');
+	// 		$appendElem.appendTo('form#confirmation-confirmed-modal .actions');
+	// 	}
+
+	// });
+
+	$(document).on('click', '.update-order', function(){
+        let proceed  = true;
+        let order_id = [];
+        let status   = $(this).parent().find('select[name=update-order-select]').val();
+
+        if($('.sejolisa-confirm-order-pickup').length == 0){
 			var $appendElem = $('<a class="sejolisa-confirm-order-pickup ui primary button">Proses Pickup</a>');
 			$appendElem.appendTo('form#confirmation-confirmed-modal .actions');
 		}
 
-	});
+		$("tbody input[type=checkbox]:checked").each(function(i, el){
+            order_id.push($(el).data('id'));
+        });
+            
+        // if('' === status) {
+        //     alert('<?php _e('Anda belum memilih aksi', 'sejoli'); ?>');
+        //     return;
+        // }
+
+        // if('shipping' != status) {
+        //     proceed = confirm('Anda yakin akan melakukan update pada order yang dipilih?');
+        // }
+
+        // if(proceed) {
+
+        //     $("tbody input[type=checkbox]:checked").each(function(i, el){
+        //         order_id.push($(el).data('id'));
+        //     });
+
+        //     if(0 < order_id.length) {
+        //         if('shipping' === status) {
+        //             sejoli_check_shipping(order_id);
+        //         } else {
+        //             sejoli_direct_update(order_id, status);
+        //         }
+        //     } else {
+        //         alert('<?php _e('Anda belum memilih order', 'sejoli'); ?>');
+        //         return;
+        //     }
+        // }
+    });
 
 	$(document).on('click', '.sejolisa-confirm-order-pickup', function(){
 

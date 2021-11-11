@@ -1,7 +1,7 @@
 <?php
 namespace Sejoli_Standalone_Cod\API;
 
-use Sejoli_Standalone_Cod\Shipping_Method;
+// use Sejoli_Standalone_Cod\Shipping_Method;
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -33,7 +33,7 @@ class SCOD {
 
 	/**
 	 * Base URL.
-	 *66666666
+	 *
 	 * @since 1.0.0
 	 */
 	private $base_url;
@@ -96,7 +96,7 @@ class SCOD {
 	 * @return (mixed|false)
      */
 	public function get_token() {
-	
+		
 		return get_option( $this->token_option );
 	
 	}
@@ -363,11 +363,13 @@ class SCOD {
 				return new \WP_Error( 'invalid_api_params', 'Store account is invalid.' );
 			}
 
-			$product_id = $body_params['invoice_number'];
+			$get_order  = sejolisa_get_order( ['ID' => $body_params['invoice_number'] ] );
+			$order_data = $get_order['orders'];
+			$product_id = $order_data['product_id'];
+				// error_log(print_r($body_params['order'], true));
 
 			//Always validate token first before doing request
 			if( $token = $this->get_token() ) {
-
 				// Validate token if set
 				if( $token ) {
 					$validate_token = $this->validate_token( $token );
@@ -377,29 +379,19 @@ class SCOD {
 						
 						// Get order shipping instance
 						$order = $body_params['order'];
-						$shipping_method_instance_id = null;
+						$username = carbon_get_post_meta($product_id, 'sejoli_scod_username'); //$shipping_instance->get_option( 'scod_username' );
+						$password = carbon_get_post_meta($product_id, 'sejoli_scod_password'); //$shipping_instance->get_option( 'scod_password' );
+						error_log(print_r($username, true));
+						error_log(print_r($password, true));
+						if( $username && $password ) {
+							$token = $this->get_new_token( $username, $password );
 
-						foreach( $order->get_items( 'shipping' ) as $item_id => $item ){
-							$shipping_method_instance_id = $item->get_instance_id(); // The instance ID
-						}
-
-						if( $shipping_method_instance_id ) {
-							
-							$shipping_instance = new Shipping_Method( $shipping_method_instance_id );
-							$username = $shipping_instance->carbon_get_post_meta($product_id, 'sejoli_scod_username'); //$shipping_instance->get_option( 'scod_username' );
-							$password = $shipping_instance->carbon_get_post_meta($product_id, 'sejoli_scod_password'); //$shipping_instance->get_option( 'scod_password' );
-
-							if( $username && $password ) {
-								$token = $this->get_new_token( $username, $password );
-
-								if( is_wp_error( $token ) ) {
-									return new \WP_Error( 'invalid_token', 'Token is invalid.' );
-								}
+							if( is_wp_error( $token ) ) {
+								return new \WP_Error( 'invalid_token', 'Token is invalid.' );
 							}
-						} else {
-							return new \WP_Error( 'invalid_token', 'Failed to get new token.' );
 						}
-					}
+
+				}
 
 					$this->set_token( $token );
 				}
@@ -408,6 +400,7 @@ class SCOD {
 			unset( $body_params['order'] );
 			$set_body 	  = $this->set_body_params( $body_params );
 			$get_response = $this->do_request();
+			error_log(print_r($get_response, true));
 
 			if ( ! is_wp_error( $get_response ) ) :
 				$body = json_decode( $get_response['body'] );

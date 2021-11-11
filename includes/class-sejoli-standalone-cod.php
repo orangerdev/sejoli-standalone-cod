@@ -158,6 +158,7 @@ class Sejoli_Standalone_Cod {
 		 */
 		require_once SEJOLI_STANDALONE_COD_DIR . 'includes/class-sejoli-standalone-cod-api.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'includes/class-sejoli-standalone-cod-order-webhook.php';
+		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-saas.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-jne.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-sicepat.php';
 
@@ -267,6 +268,7 @@ class Sejoli_Standalone_Cod {
 		$this->loader->add_filter( 'cron_schedules', $order, 'sejoli_update_status_cron_schedules' );
 		$this->loader->add_action( 'admin_init', $order, 'schedule_update_order_to_complete_based_on_shipment_status' );
 		$this->loader->add_action( 'update_status_order_to_completed', $order, 'update_status_order_to_completed_based_on_shipment_status' );
+		$this->loader->add_action( 'sejoli/thank-you/render', $order, 'send_order_data_to_api', 100);
 
 	}
 

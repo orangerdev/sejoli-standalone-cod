@@ -82,19 +82,20 @@ final class SejoliCOD extends \SejoliSA\Payment {
 
         $url        = $_SERVER['HTTP_REFERER'];
         $product_id = url_to_postid( $url );
-        $active     = carbon_get_post_meta($product_id, 'shipment_cod_services_active');
+        $active     = carbon_get_post_meta( $product_id, 'shipment_cod_services_active' );
+        $product    = sejolisa_get_product( $product_id );
 
-        if(true === $active) :
+        if( true === $active && $product->type === "physical" ) :
 
             // Listing available payment channels from your payment gateways
             $methods = array(
                 'CashOnDelivery'
             );
 
-            $cod_name  = __('Cash on Delivery', 'sejoli-standalone-cod');
+            $cod_name  = __( 'Cash on Delivery', 'sejoli-standalone-cod' );
             $cod_image = SEJOLI_STANDALONE_COD_URL . 'public/img/cod.png';
 
-            foreach($methods as $method_id) :
+            foreach( $methods as $method_id ) :
 
                 // MUST PUT ::: after payment ID
                 $key = 'cod:::' . $method_id;
