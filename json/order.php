@@ -496,7 +496,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
     /**
      * WooCommerce action to send newly created order data to API.
-     * Hook via woocommerce_thankyou
+     * Hook action via sejoli/thank-you/render
      *
      * @since    1.0.0
      */

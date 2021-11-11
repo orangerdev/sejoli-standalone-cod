@@ -578,7 +578,7 @@ class COD {
 
     /**
      * Set JNE COD shipping options
-     * @since   1.2.0
+     * @since   1.0.0
      * @param   array $shipping_options     Current shipping options
      * @param   array $post_data            Post data options
      * @return  array
@@ -587,14 +587,14 @@ class COD {
 
         $product_id    = intval( $post_data['product_id'] );
         $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
+        $markup_ongkir = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_markup_with_ongkir' ) );
         $product       = sejolisa_get_product( $product_id );
 
         if( false !== $is_cod_active && $product->type === "physical" ) :
 
-            $cod_origin           = carbon_get_post_meta( $product_id, 'shipment_cod_origin');
-            $cod_origin_city      = $this->get_subdistrict_detail( $cod_origin );
-            // $get_origin           = JNE_Origin::where( 'name', $cod_origin_city['city'] )->first();
-
+            $cod_origin      = carbon_get_post_meta( $product_id, 'shipment_cod_origin');
+            $cod_origin_city = $this->get_subdistrict_detail( $cod_origin );
+            
             $getOriginCode = DB::table( 'sejolisa_shipping_jne_origin' )
                     ->where( 'city_id', $cod_origin_city['city_id'] )
                     ->get();        
@@ -626,16 +626,17 @@ class COD {
                 return false;
             }
 
-            // $get_destination      = JNE_Destination::where( 'district_name', $cod_destination_city['subdistrict_name'] )->first(); 
             // $is_cod_locally = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_cover' ) );
-            $add_options    = true;
-            $fee_title      = '';
-            $product        = sejolisa_get_product( $post_data['product_id'] );
-            $product_weight = intval( $product->shipping['weight'] );
-            $weight_cost    = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
-            $weight_cost    = ( 0 === $weight_cost ) ? 1 : $weight_cost;
-            $tariff         = $this->get_tariff_info( $origin, $destination, $weight_cost );
-
+            $add_options       = true;
+            $fee_title         = '';
+            $product           = sejolisa_get_product( $post_data['product_id'] );
+            $product_weight    = intval( $product->shipping['weight'] );
+            $weight_cost       = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
+            $weight_cost       = ( 0 === $weight_cost ) ? 1 : $weight_cost;
+            $tariff            = $this->get_tariff_info( $origin, $destination, $weight_cost );
+            $markup_percentage = 0.04;
+            $markup_fee        = $product->price * $markup_percentage;
+            
             // if( true === $is_cod_locally ) :
                 
             //     $city_cover  = carbon_get_post_meta( $product_id, 'shipment_cod_jne_city');
@@ -656,7 +657,11 @@ class COD {
 
                         if( \in_array( $rate->service_code, $this->get_jne_services($product_id) ) ) {
                             
-                            $price = $rate->price * $weight_cost;
+                            if( false !== $markup_ongkir ) {
+                                $price = ($rate->price + $markup_fee) * $weight_cost; 
+                            } else {
+                                $price = $rate->price * $weight_cost;
+                            }
 
                             if($rate->service_display === 'OKE'){
                                 $cod_title = 'JNE '.$rate->service_display. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
@@ -691,7 +696,7 @@ class COD {
 
     /**
      * Set SiCepat COD shipping options
-     * @since   1.2.0
+     * @since   1.0.0
      * @param   array $shipping_options     Current shipping options
      * @param   array $post_data            Post data options
      * @return  array
@@ -700,8 +705,10 @@ class COD {
 
         $product_id    = intval( $post_data['product_id'] );
         $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
+        $markup_ongkir = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_markup_with_ongkir' ) );
+        $product       = sejolisa_get_product( $product_id );
 
-        if(false !== $is_cod_active) :
+        if( false !== $is_cod_active && $product->type === "physical" ) :
 
             $cod_origin      = carbon_get_post_meta( $product_id, 'shipment_cod_origin' );
             $cod_origin_city = $this->get_subdistrict_detail( $cod_origin );
@@ -738,13 +745,16 @@ class COD {
             }
 
             // $is_cod_locally = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_cover' ) );
-            $add_options    = true;
-            $fee_title      = '';
-            $product        = sejolisa_get_product( $post_data['product_id'] );
-            $product_weight = intval( $product->shipping['weight'] );
-            $weight_cost    = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
-            $weight_cost    = ( 0 === $weight_cost ) ? 1 : $weight_cost;
-            $tariff         = $this->get_sicepat_tariff_info( $origin, $destination, $weight_cost );
+            $add_options       = true;
+            $fee_title         = '';
+            $product           = sejolisa_get_product( $post_data['product_id'] );
+            $product_weight    = intval( $product->shipping['weight'] );
+            $weight_cost       = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
+            $weight_cost       = ( 0 === $weight_cost ) ? 1 : $weight_cost;
+            $tariff            = $this->get_sicepat_tariff_info( $origin, $destination, $weight_cost );
+            $markup_percentage = 0.04;
+            $markup_fee        = $product->price * $markup_percentage;
+
             // if( true === $is_cod_locally ) :
                 
             //     $city_cover  = carbon_get_post_meta( $product_id, 'shipment_cod_jne_city');
@@ -764,8 +774,12 @@ class COD {
                     foreach ( $tariff->tariff_data as $rate ) {
                         
                         if( \in_array( $rate->service, $this->get_sicepat_services($product_id) ) ) {
-                                                        
-                            $price = $rate->tariff * $weight_cost;
+                            
+                            if( false !== $markup_ongkir ) {
+                                $price = ($rate->tariff + $markup_fee) * $weight_cost; 
+                            } else {
+                                $price = $rate->tariff * $weight_cost;
+                            }
 
                             if($rate->service === 'SIUNT'){
                                 $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
