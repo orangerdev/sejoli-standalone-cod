@@ -677,17 +677,17 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             );
 
             // Send data to API
-            // $api_scod     = new API_SCOD();
-            // $create_order = $api_scod->post_create_order( $order_params );
+            $api_scod     = new API_SCOD();
+            $create_order = $api_scod->post_create_order( $order_params );
 
-            // if( ! is_wp_error( $create_order ) ) {
-            //     // Flag the action as done (to avoid repetitions on reload for example)
-            //     if( $order->save() ) {
-            //         error_log( 'Sync order success ..' );
-            //     }
-            // } else {
-            //     error_log( 'Sync order error .. ' );
-            // }
+            if( ! is_wp_error( $create_order ) ) {
+                // Flag the action as done (to avoid repetitions on reload for example)
+                if( $order->save() ) {
+                    error_log( 'Sync order success ..' );
+                }
+            } else {
+                error_log( 'Sync order error .. ' );
+            }
             
             error_log( 'Done processing order ID '. $order_id );
         
