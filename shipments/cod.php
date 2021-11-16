@@ -634,8 +634,12 @@ class COD {
             $weight_cost       = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
             $weight_cost       = ( 0 === $weight_cost ) ? 1 : $weight_cost;
             $tariff            = $this->get_tariff_info( $origin, $destination, $weight_cost );
+            $cart_detail       = apply_filters( 'sejoli/order/cart-detail', [], $post_data );
             $markup_percentage = 0.04;
-            $markup_fee        = $product->price * $markup_percentage;
+            $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : '';
+            $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : '';
+            $get_product_total = isset( $variant_price ) ? $product->price + $variant_price : $product->price;
+            $markup_fee        = $get_product_total * $markup_percentage;
             
             // if( true === $is_cod_locally ) :
                 
@@ -752,8 +756,12 @@ class COD {
             $weight_cost       = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
             $weight_cost       = ( 0 === $weight_cost ) ? 1 : $weight_cost;
             $tariff            = $this->get_sicepat_tariff_info( $origin, $destination, $weight_cost );
-            $markup_percentage = 0.04;
-            $markup_fee        = $product->price * $markup_percentage;
+            $cart_detail       = apply_filters( 'sejoli/order/cart-detail', [], $post_data );
+            $markup_percentage = 0.08;
+            $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : '';
+            $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : '';
+            $get_product_total = isset( $variant_price ) ? $product->price + $variant_price : $product->price;
+            $markup_fee        = $get_product_total * $markup_percentage;
 
             // if( true === $is_cod_locally ) :
                 
