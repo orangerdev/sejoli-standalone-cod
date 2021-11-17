@@ -636,11 +636,10 @@ class COD {
             $tariff            = $this->get_tariff_info( $origin, $destination, $weight_cost );
             $cart_detail       = apply_filters( 'sejoli/order/cart-detail', [], $post_data );
             $markup_percentage = 0.04;
-            $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : '';
-            $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : '';
+            $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : 0;
+            $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : 0;
             $get_product_total = isset( $variant_price ) ? $product->price + $variant_price : $product->price;
             $markup_fee        = $get_product_total * $markup_percentage;
-            
             // if( true === $is_cod_locally ) :
                 
             //     $city_cover  = carbon_get_post_meta( $product_id, 'shipment_cod_jne_city');
@@ -758,8 +757,8 @@ class COD {
             $tariff            = $this->get_sicepat_tariff_info( $origin, $destination, $weight_cost );
             $cart_detail       = apply_filters( 'sejoli/order/cart-detail', [], $post_data );
             $markup_percentage = 0.08;
-            $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : '';
-            $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : '';
+            $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : 0;
+            $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : 0;
             $get_product_total = isset( $variant_price ) ? $product->price + $variant_price : $product->price;
             $markup_fee        = $get_product_total * $markup_percentage;
 
