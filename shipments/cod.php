@@ -187,17 +187,26 @@ class COD {
      * @return  array
      */
     public function set_product_shipping_fields( $fields ) {
-        
-        $fields[]   = array(
+
+        $fields[] = array(
             'title'     => __('Cash on Delivery (COD)', 'sejoli-standalone-cod'),
             'fields'    => array(
                 Field::make( 'separator', 'sep_cod_services' , __('Cash on Delivery (COD)', 'sejoli-standalone-cod'))
                     ->set_classes('sejoli-with-help')
                     ->set_help_text('<a href="' . sejolisa_get_admin_help('shipping') . '" class="thickbox sejoli-help">Tutorial <span class="dashicons dashicons-video-alt2"></span></a>'),
 
+                Field::make('html', 'html_info_sejoli_cod')
+                    ->set_html('<div class="sejoli-html-message info"><p>'. __('Pengaturan ini hanya akan muncul jika tipe produk adalah produk fisik', 'sejoli') . '</p></div>'),
+
                 Field::make('checkbox', 'shipment_cod_services_active', __('Aktifkan COD', 'sejoli-standalone-cod'))
                     ->set_option_value('yes')
-                    ->set_default_value(true),
+                    ->set_default_value(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
+                        )
+                    )),
 
                 Field::make('text', 'sejoli_scod_username', __('SCOD Username', 'sejoli-standalone-cod'))
                     ->set_required(true)
@@ -205,6 +214,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -215,6 +228,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -225,6 +242,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -234,6 +255,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -241,6 +266,10 @@ class COD {
                     array(
                         'field' => 'shipment_cod_services_active',
                         'value' => true
+                    ),
+                    array(
+                        'field' => 'product_type',
+                        'value' => 'physical'
                     )
                 )),
                 
@@ -251,6 +280,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -261,6 +294,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -271,6 +308,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -280,6 +321,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )))
                     ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
                 
@@ -287,6 +332,10 @@ class COD {
                     array(
                         'field' => 'shipment_cod_services_active',
                         'value' => true
+                    ),
+                    array(
+                        'field' => 'product_type',
+                        'value' => 'physical'
                     )
                 )),
 
@@ -300,6 +349,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -309,6 +362,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -319,6 +376,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -326,6 +387,10 @@ class COD {
                     array(
                         'field' => 'shipment_cod_services_active',
                         'value' => true
+                    ),
+                    array(
+                        'field' => 'product_type',
+                        'value' => 'physical'
                     )
                 )),
 
@@ -344,6 +409,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -372,6 +441,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
 
@@ -382,6 +455,10 @@ class COD {
                         array(
                             'field' => 'shipment_cod_services_active',
                             'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
                         )
                     )),
             )
