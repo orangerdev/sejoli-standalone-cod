@@ -776,36 +776,40 @@ class COD {
                     return false;
                 }
 
-                if( is_array( $tariff->tariff_data ) && count( $tariff->tariff_data ) > 0 ) {
+                if($get_product_total >= 5000 && $get_product_total <= 15000000) :
 
-                    foreach ( $tariff->tariff_data as $rate ) {
+                    if( is_array( $tariff->tariff_data ) && count( $tariff->tariff_data ) > 0 ) {
+
+                        foreach ( $tariff->tariff_data as $rate ) {
+                           
+                            if( \in_array( $rate->service, $this->get_sicepat_services($product_id) ) ) {
+                                
+                                if( false !== $markup_ongkir ) {
+                                    $price = ($rate->tariff + $markup_fee) * $weight_cost; 
+                                } else {
+                                    $price = $rate->tariff * $weight_cost;
+                                }
+
+                                if($rate->service === 'SIUNT'){
+                                    $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
+                                    $key_title = 'SICEPAT '.$rate->service;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 1-2 Hari)';
+                                }
+                                elseif($rate->service === 'GOKIL'){
+                                    $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
+                                    $key_title = 'SICEPAT '.$rate->service;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 2-3 Hari)';
+                                }
+                                
+                                $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
+                                $shipping_options[$key_options] = $cod_title . $fee_title;
+
+                            }
                         
-                        if( \in_array( $rate->service, $this->get_sicepat_services($product_id) ) ) {
-                            
-                            if( false !== $markup_ongkir ) {
-                                $price = ($rate->tariff + $markup_fee) * $weight_cost; 
-                            } else {
-                                $price = $rate->tariff * $weight_cost;
-                            }
-
-                            if($rate->service === 'SIUNT'){
-                                $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
-                                $key_title = 'SICEPAT '.$rate->service;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 1-2 Hari)';
-                            }
-                            elseif($rate->service === 'GOKIL'){
-                                $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
-                                $key_title = 'SICEPAT '.$rate->service;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 2-3 Hari)';
-                            }
-                            
-                            $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
-                            $shipping_options[$key_options] = $cod_title . $fee_title;
-
                         }
-
                     }
-                }
+
+                endif;
 
             endif;
 
