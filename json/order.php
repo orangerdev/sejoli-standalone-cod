@@ -218,14 +218,14 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                         $respond['valid']  = true;
                         $number_resi = $do_update[0]->cnote_no;
 
+                        echo wp_send_json( $number_resi );
+
                     } else {
 
                         $respond['message'] = $do_update->get_error_message();
                     }
 
                 endif;
-                
-                echo wp_send_json( $number_resi );
 
             elseif (strpos( $checkCourierService, 'SICEPAT' ) !== false) :
 
@@ -371,14 +371,14 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                         $respond['valid'] = true;
                         $number_resi      = $do_update->request_number;
 
+                        echo wp_send_json( $number_resi );
+
                     } else {
 
                         $respond['message'] = $do_update->get_error_message();
                     }
 
                 endif;
-                
-                echo wp_send_json( $number_resi );
 
             endif;
 
@@ -454,9 +454,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
                         if( ! is_wp_error( $update_order ) ) {
                             // Flag the action as done (to avoid repetitions on reload for example)
-                            if( $order->save() ) {
-                                error_log( 'Sync order success ..' );
-                            }
+                            error_log( 'Sync order success ..' );
                         }
 
                         $order->update_status( 'completed', 'order_note' );
@@ -473,9 +471,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
                         if( ! is_wp_error( $update_order ) ) {
                             // Flag the action as done (to avoid repetitions on reload for example)
-                            if( $order->save() ) {
-                                error_log( 'Sync order success ..' );
-                            }
+                            error_log( 'Sync order success ..' );
                         }
 
                         $order->update_status( 'completed', 'order_note' );
@@ -682,9 +678,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
             if( ! is_wp_error( $create_order ) ) {
                 // Flag the action as done (to avoid repetitions on reload for example)
-                if( $order->save() ) {
-                    error_log( 'Sync order success ..' );
-                }
+                error_log( 'Sync order success ..' );
             } else {
                 error_log( 'Sync order error .. ' );
             }

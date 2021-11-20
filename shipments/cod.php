@@ -396,13 +396,7 @@ class COD {
 
                 Field::make( "multiselect", "shipment_cod_sicepat_services", __('Layanan SiCepat', 'sejoli-standalone-cod') )
                     ->add_options( array(
-                        'cod_sicepat_service_cargo' => 'Cargo',
-                        'cod_sicepat_service_best' => 'BEST',
                         'cod_sicepat_service_gokil' => 'GOKIL',
-                        'cod_sicepat_service_kepo' => 'KEPO',
-                        'cod_sicepat_service_halu' => 'Halu',
-                        'cod_sicepat_service_reguler' => 'Regular',
-                        'cod_sicepat_service_sds' => 'SDS',
                         'cod_sicepat_service_siunt' => 'SI UNTUNG',
                     ))
                     ->set_conditional_logic(array(
@@ -517,32 +511,8 @@ class COD {
 
         foreach ( $sicepat_services as $sicepat_service ) {
 
-            if( $sicepat_service === 'cod_sicepat_service_cargo' ) {
-                $services[] = 'Cargo';
-            }
-
-            if( $sicepat_service === 'cod_sicepat_service_best' ) {
-                $services[] = 'BEST';
-            }
-
             if( $sicepat_service === 'cod_sicepat_service_gokil' ) {
                 $services[] = 'GOKIL';
-            }
-
-            if( $sicepat_service === 'cod_sicepat_service_kepo' ) {
-                $servvices[] = 'KEPO';
-            }
-
-            if( $sicepat_service === 'cod_sicepat_service_halu' ) {
-                $services[] = 'HALU';
-            }
-
-            if( $sicepat_service === 'cod_sicepat_service_reguler' ) {
-                $services[] = 'REG';
-            }
-
-            if( $sicepat_service === 'cod_sicepat_service_sds' ) {
-                $services[] = 'SDS';
             }
 
             if( $sicepat_service === 'cod_sicepat_service_siunt' ) {

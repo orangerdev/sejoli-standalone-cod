@@ -366,7 +366,6 @@ class SCOD {
 			$get_order  = sejolisa_get_order( ['ID' => $body_params['invoice_number'] ] );
 			$order_data = $get_order['orders'];
 			$product_id = $order_data['product_id'];
-				// error_log(print_r($body_params['order'], true));
 
 			//Always validate token first before doing request
 			if( $token = $this->get_token() ) {
@@ -379,10 +378,9 @@ class SCOD {
 						
 						// Get order shipping instance
 						$order = $body_params['order'];
-						$username = carbon_get_post_meta($product_id, 'sejoli_scod_username'); //$shipping_instance->get_option( 'scod_username' );
-						$password = carbon_get_post_meta($product_id, 'sejoli_scod_password'); //$shipping_instance->get_option( 'scod_password' );
-						error_log(print_r($username, true));
-						error_log(print_r($password, true));
+						$username = carbon_get_post_meta($product_id, 'sejoli_scod_username');
+						$password = carbon_get_post_meta($product_id, 'sejoli_scod_password');
+	
 						if( $username && $password ) {
 							$token = $this->get_new_token( $username, $password );
 
@@ -400,7 +398,6 @@ class SCOD {
 			unset( $body_params['order'] );
 			$set_body 	  = $this->set_body_params( $body_params );
 			$get_response = $this->do_request();
-			error_log(print_r($get_response, true));
 
 			if ( ! is_wp_error( $get_response ) ) :
 				$body = json_decode( $get_response['body'] );

@@ -4,7 +4,7 @@ add_action( 'rest_api_init', 'sejolisa_add_callback_url_endpoint' );
 function sejolisa_add_callback_url_endpoint() {
 
     register_rest_route(
-        'sejolisa-webhook/v1/', // Namespace
+        'scod-webhook/v1/', // Namespace
         'update-order-callback', // Endpoint
         array(
             'methods'  => 'POST',
@@ -15,6 +15,8 @@ function sejolisa_add_callback_url_endpoint() {
 }
 
 function sejolisa_update_order_callback( $request_data ) {
+
+    global $wpdb;
 
     $data = array();
     
@@ -35,8 +37,19 @@ function sejolisa_update_order_callback( $request_data ) {
         $orderID    = $data['received_data']['order_id'];
         $numberResi = $data['received_data']['shipment_number'];
 
-        // wp_update_post( ['ID' => $orderID, 'post_status' => 'wc-in-shipping'] );
-        // update_post_meta( $orderID, '_sejoli_shipping_number', $numberResi );
+        $response = sejolisa_update_order_meta_data(
+        $orderID,
+        [
+            'shipping_data' => [
+                'resi_number' => $numberResi
+            ]
+        ]);
+
+        $status = "shipping";
+        do_action('sejoli/order/update-status', [
+            'ID'     => $orderID,
+            'status' => $status
+        ]);
         
         $data['message'] = 'You have reached the server';
         
