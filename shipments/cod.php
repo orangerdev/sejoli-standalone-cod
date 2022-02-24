@@ -7,6 +7,7 @@ use Carbon_Fields\Field;
 use \WeDevs\ORM\Eloquent\Facades\DB;
 use Sejoli_Standalone_Cod\Model\JNE\Tariff as JNE_Tariff;
 use Sejoli_Standalone_Cod\API\JNE as API_JNE;
+use Sejoli_Standalone_Cod\API\ARVEOLI as API_ARVEOLI;
 use Sejoli_Standalone_Cod\Model\SiCepat\Tariff as SICEPAT_Tariff;
 use Sejoli_Standalone_Cod\API\SiCepat as API_SICEPAT;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -563,8 +564,8 @@ class COD {
 
         if( ! $get_tariff ) {
         
-            $req_tariff_data = API_JNE::set_params()->get_tariff( $origin->code, $destination->code, $weight );
-            // $req_tariff_data = API_JNE::set_params()->get_tariff( 'CGK10000', 'BDO10000', $weight );
+            $req_tariff_data = API_ARVEOLI::set_params()->get_tariff( $origin->code, $destination->code );
+
             if( is_wp_error( $req_tariff_data ) ) {
                 return false;
             }

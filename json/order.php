@@ -433,7 +433,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
                 $order_id               = $result->ID; // The Order ID
                 $meta_data              = unserialize($result->meta_data);
-                $shipping_number        = $meta_data['shipping_data']['resi_number'];
+                $shipping_number        = (isset($meta_data['shipping_data']['resi_number'])) ? $meta_data['shipping_data']['resi_number'] : '';
                 $trace_tracking_jne     = API_JNE::set_params()->get_tracking( $shipping_number );
                 $trace_tracking_sicepat = API_SICEPAT::set_params()->get_tracking( $shipping_number );
 
@@ -540,7 +540,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     return false;
                 }
 
-                $receiver_destination = $getDestCode[0];
+                $receiver_destination = $getDestCode[0]->code;
 
                 if( ! $receiver_destination ) {
                     return false;
@@ -554,7 +554,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     return false;
                 }
 
-                $shipper_origin = $getOriginCode[0];
+                $shipper_origin = $getOriginCode[0]->code;
 
                 if( ! $shipper_origin ) {
                     return false;
@@ -606,10 +606,22 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $receiver_address  = $order['meta_data']['shipping_data']['address'];
             $receiver_district = $receiver_destination_city['subdistrict_name'];
             $receiver_city     = $receiver_destination_city['type'].' '.$receiver_destination_city['city'];
-            $receiver_region   = $receiver_destination_city['province'];
+            $receiver_province = $receiver_destination_city['province'];
             $receiver_zip      = '0000';
             $receiver_phone    = $order['meta_data']['shipping_data']['phone'];
+            $receiver_email    = '';
             $shipping_cost     = $order['meta_data']['shipping_data']['cost'];
+            $getGapMarkup      = ($order['grand_total'] - $shipping_cost) * 0.04;
+            $markup_price      = $order['meta_data']['markup_price'];
+            if($markup_price > 0){
+                $cod_fee       = $markup_price;
+                $shipping_fee  = $shipping_cost;
+                $packageAmount = ($order['grand_total'] - $order['meta_data']['shipping_data']['cost']) - $markup_price;
+            } else {
+                $cod_fee       = $getGapMarkup;
+                $shipping_fee  = $shipping_cost - $getGapMarkup;
+                $packageAmount = ($order['grand_total'] - $order['meta_data']['shipping_data']['cost']);
+            }
             $product_name      = $order['product']->post_title;
             $product_price     = $order['product']->price;
             $product_type      = $order['product']->type;
@@ -617,7 +629,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $shipper_address   = $order['meta_data']['shipping_data']['address'];
             $shipper_district  = $shipper_origin_city['subdistrict_name'];
             $shipper_city      = $shipper_origin_city['type'].' '.$shipper_origin_city['city'];
-            $shipper_region    = $shipper_origin_city['province'];
+            $shipper_province  = $shipper_origin_city['province'];
             $shipper_zip       = '0000';
             $shipper_phone     = carbon_get_post_meta($product_id, 'sejoli_store_phone');
             $shipper_email     = carbon_get_theme_option('notification_email_from_address');
@@ -629,47 +641,51 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $insurance         = "N";
             $codflag           = "YES";
 
-            // Default params
+            // Default params            
             $order_params = array(
-                'store_id'        => $store_id,
-                'secret_key'      => $store_secret_key,
-                'buyer_name'      => $buyer_name,
-                'buyer_email'     => $buyer_email,
-                'buyer_phone'     => $buyer_phone,
-                'courier_name'    => $courier_name,
-                'invoice_number'  => $order_id,
-                'shipper_name'    => $shipper_name,
-                'shipper_addr1'   => $shipper_address,
-                'shipper_addr2'   => $shipper_district,
-                'shipper_city'    => $shipper_city,
-                'shipper_region'  => $shipper_region,
-                'shipper_zip'     => $shipper_zip,
-                'shipper_phone'   => $shipper_phone,
-                'shipper_email'   => $shipper_email,
-                'receiver_name'   => $receiver_name,
-                'receiver_addr1'  => $receiver_address,
-                'receiver_addr2'  => $receiver_district,
-                'receiver_city'   => $receiver_city,
-                'receiver_region' => $receiver_region,
-                'receiver_zip'    => $receiver_zip,
-                'receiver_phone'  => $receiver_phone,
-                'qty'             => $qty,
-                'weight'          => $weight_cost,
-                'goods_desc'      => $product_name,
-                'goods_category'  => $product_name,
-                'goods_value'     => $qty,
-                'goods_type'      => '1',
-                'insurance'       => $insurance,
-                'origin'          => $shipper_origin,
-                'destination'     => $receiver_destination,
-                'service'         => $shipping_service,
-                'codflag'         => $codflag,
-                'codamount'       => $order['grand_total'],
-                'invoice_total'   => $order['grand_total'],
-                'shipping_fee'    => $shipping_cost,
-                'shipping_status' => 'pending',
-                'notes'           => '',
-                'order'           => $order
+                'store_id'             => $store_id,
+                'secret_key'           => $store_secret_key,
+                'buyer_name'           => $buyer_name,
+                'buyer_email'          => $buyer_email,
+                'buyer_phone'          => $buyer_phone,
+                'courier_name'         => $courier_name,
+                'invoice_number'       => $order_id,
+                'shipper_name'         => $shipper_name,
+                'shipper_address'      => $shipper_address,
+                'shipper_province'     => $shipper_province,
+                'shipper_city'         => $shipper_city,
+                'shipper_district'     => $shipper_district,
+                'shipper_subdistrict'  => $shipper_district,
+                'shipper_zip'          => $shipper_zip,
+                'shipper_phone'        => $shipper_phone,
+                'shipper_email'        => $shipper_email,
+                'receiver_name'        => $receiver_name,
+                'receiver_address'     => $receiver_address,
+                'receiver_province'    => $receiver_province,
+                'receiver_city'        => $receiver_destination_city['city'],
+                'receiver_district'    => $receiver_district,
+                'receiver_subdistrict' => $receiver_district,
+                'receiver_zip'         => $receiver_zip,
+                'receiver_phone'       => $receiver_phone,
+                'receiver_email'       => $receiver_email,
+                'qty'                  => $qty,
+                'weight'               => $weight_cost,
+                'goods_desc'           => $product_name,
+                'goods_category'       => $product_name,
+                'goods_value'          => $packageAmount,
+                'goods_type'           => '1',
+                'insurance'            => $insurance,
+                'origin'               => $shipper_origin,
+                'destination'          => $receiver_destination,
+                'service'              => $shipping_service,
+                'codflag'              => $codflag,
+                'codamount'            => $order['grand_total'],
+                'invoice_total'        => $order['grand_total'],
+                'shipping_fee'         => $shipping_fee,
+                'cod_fee'              => $cod_fee,
+                'shipping_status'      => 'pending',
+                'notes'                => '',
+                'order'                => $order
             );
 
             // Send data to API
