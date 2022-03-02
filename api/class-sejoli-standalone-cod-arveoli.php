@@ -331,14 +331,16 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
 
 			$get_response = self::do_request();
 
-			error_log(print_r($get_response, true));
-
 			if ( ! is_wp_error( $get_response ) ) :
+				
+				error_log(print_r("Response", true));
+				error_log(print_r($get_response, true));
 
 				if ( self::verify_response_code( $get_response ) ) :
 
 					if( $data = self::get_valid_body_object( $get_response ) ) :
 
+						error_log(print_r("Data", true));
 						error_log(print_r($data, true));
 
 						if( isset( $data->detail ) ) {
