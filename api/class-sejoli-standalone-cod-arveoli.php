@@ -46,7 +46,7 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
 	public static function set_live_data() {
 
 		$api_key 	= '0o4k0gs4o0kwg8cs840oskwscc4k0g4swwww8804';
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 		self::$body = array(
 			'ARVEOLI_KEY'  => $api_key
 		);
@@ -61,7 +61,7 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
      * @return 	(static) return an instance of static class
      */
 	public static function set_params( $is_sandbox = false ) {
-
+		
 		self::$headers = [
 			'Content-Type' => 'application/x-www-form-urlencoded',
 			'Accept' 	   => 'application/json'
@@ -332,20 +332,14 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
 			$get_response = self::do_request();
 
 			if ( ! is_wp_error( $get_response ) ) :
-				
-				error_log(print_r("Response", true));
-				error_log(print_r($get_response, true));
 
 				if ( self::verify_response_code( $get_response ) ) :
 
 					if( $data = self::get_valid_body_object( $get_response ) ) :
 
-						error_log(print_r("Data", true));
-						error_log(print_r($data, true));
+						if( isset( $data ) ) {
 
-						if( isset( $data->detail ) ) {
-
-							return $data->detail;
+							return $data;
 
 						}
 

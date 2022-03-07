@@ -239,7 +239,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     if ( ! is_wp_error( $do_update ) ) {
 
                         $respond['valid']  = true;
-                        $number_resi = $do_update[0]->cnote_no;
+                        $number_resi = $do_update->message;
 
                         echo wp_send_json( $number_resi );
 
