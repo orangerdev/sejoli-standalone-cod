@@ -328,6 +328,20 @@ class COD {
                             'value' => 'physical'
                         )))
                     ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
+
+                Field::make('text', 'sejoli_store_postal_code', __('Kode Pos', 'sejoli-standalone-cod'))
+                    ->set_attribute('type', 'number')
+                    ->set_required(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
+                        )
+                    )),
                 
                 Field::make('separator', 'sep_cod_services_setting', __('Pengaturan Layanan COD JNE', 'sejoli-standalone-cod'))->set_conditional_logic(array(
                     array(

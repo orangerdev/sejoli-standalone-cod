@@ -154,7 +154,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     // $receiver_destination      = JNE_Destination::where( 'city_id', $receiver_destination_city['city_id'] )->first();
                     $receiver_name       = $order['meta_data']['shipping_data']['receiver'];
                     $receiver_address    = $order['meta_data']['shipping_data']['address'];
-                    $receiver_zip        = '0000';
+                    $receiver_zip        = $order['meta_data']['shipping_data']['postal_code'];
                     $receiver_email      = '';
                     $receiver_phone      = $order['meta_data']['shipping_data']['phone'];
                     $shipping_cost       = $order['meta_data']['shipping_data']['cost'];
@@ -190,7 +190,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     // $shipper_origin            = JNE_Origin::where( 'city_id', $shipper_origin_city['city_id'] )->first(); 
                     $shipper_name    = carbon_get_post_meta($product_id, 'sejoli_store_name');
                     $shipper_address = $order['meta_data']['shipping_data']['address'];
-                    $shipper_zip     = '0000';
+                    $shipper_zip     = carbon_get_post_meta($product_id, 'sejoli_store_postal_code');
                     $shipper_phone   = carbon_get_post_meta($product_id, 'sejoli_store_phone');
                     $insurance       = "N";
                     $codflag         = "YES";
@@ -642,7 +642,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $receiver_district = $receiver_destination_city['subdistrict_name'];
             $receiver_city     = $receiver_destination_city['type'].' '.$receiver_destination_city['city'];
             $receiver_province = $receiver_destination_city['province'];
-            $receiver_zip      = '0000';
+            $receiver_zip      = $order['meta_data']['shipping_data']['postal_code'];
             $receiver_phone    = $order['meta_data']['shipping_data']['phone'];
             $receiver_email    = '';
             $shipping_cost     = $order['meta_data']['shipping_data']['cost'];
@@ -665,7 +665,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $shipper_district  = $shipper_origin_city['subdistrict_name'];
             $shipper_city      = $shipper_origin_city['type'].' '.$shipper_origin_city['city'];
             $shipper_province  = $shipper_origin_city['province'];
-            $shipper_zip       = '0000';
+            $shipper_zip       = carbon_get_post_meta($product_id, 'sejoli_store_postal_code');
             $shipper_phone     = carbon_get_post_meta($product_id, 'sejoli_store_phone');
             $shipper_email     = carbon_get_theme_option('notification_email_from_address');
             $store_id          = carbon_get_post_meta($product_id, 'sejoli_scod_store_id');
