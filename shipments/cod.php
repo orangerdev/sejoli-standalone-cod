@@ -578,7 +578,7 @@ class COD {
 
         if( ! $get_tariff ) {
         
-            $req_tariff_data = API_ARVEOLI::set_params()->get_tariff( $origin->code, $destination->code );
+            $req_tariff_data = API_JNE::set_params()->get_tariff( $origin->code, $destination->code );
 
             if( is_wp_error( $req_tariff_data ) ) {
                 return false;
@@ -600,6 +600,49 @@ class COD {
     }
 
     /**
+         * Get tariff object
+         *
+         * @since   1.0.0
+         *
+         * @param   $origin         origin object to find
+         * @param   $destination    destination object to find
+         *
+         * @return  (Object|false)  returns an object on true, or false if fail
+         */
+        private function get_arveoli_tariff_info( $expedition, $origin, $destination, $weight ) {
+
+            $get_tariff = JNE_Tariff::where( 'jne_origin_id', $origin->ID )
+                            ->where( 'jne_destination_id', $destination->ID )
+                            ->first();
+
+            if( ! $get_tariff ) {
+
+                $req_tariff_data = API_ARVEOLI::set_params()->get_tariff( $expedition, $origin->code, $destination->code, $weight );
+
+                if( is_wp_error( $req_tariff_data ) ) {
+
+                    return false;
+
+                }
+
+                $get_tariff                     = new JNE_Tariff();
+                $get_tariff->jne_origin_id      = $origin->ID;
+                $get_tariff->jne_destination_id = $destination->ID;
+                $get_tariff->tariff_data        = $req_tariff_data;
+
+                if( ! $get_tariff->save() ) {
+
+                    return false;
+
+                }
+
+            }
+
+            return $get_tariff;
+
+        }
+
+    /**
      * Get tariff sicepat object
      *
      * @since   1.0.0
@@ -609,7 +652,7 @@ class COD {
      *
      * @return  (Object|false)  returns an object on true, or false if fail
      */
-    private function get_sicepat_tariff_info( $origin, $destination ) {
+    private function get_sicepat_tariff_info( $expedition, $origin, $destination, $weight ) {
         
         $get_tariff = SICEPAT_Tariff::where( 'sicepat_origin_id', $origin->ID )
                         ->where( 'sicepat_destination_id', $destination->ID )
@@ -617,8 +660,8 @@ class COD {
 
         if( ! $get_tariff ) {
         
-            $req_tariff_data = API_SICEPAT::set_params()->get_tariff( $origin->origin_code, $destination->destination_code );
-            
+            $req_tariff_data = API_ARVEOLI::set_params()->get_tariff( $expedition, $origin->origin_code, $destination->destination_code, $weight );
+
             if( is_wp_error( $req_tariff_data ) ) {
                 return false;
             }
@@ -659,7 +702,7 @@ class COD {
             
             $getOriginCode = DB::table( 'sejolisa_shipping_jne_origin' )
                     ->where( 'city_id', $cod_origin_city['city_id'] )
-                    ->get();        
+                    ->get();       
 
             if( ! $getOriginCode ) {
                 return false;
@@ -676,7 +719,7 @@ class COD {
             $getDestCode = DB::table( 'sejolisa_shipping_jne_destination' )
                     ->where( 'city_id', $cod_destination_city['city_id'] )
                     ->where( 'district_id', $cod_destination_city['subdistrict_id'] )
-                    ->get();        
+                    ->get();     
 
             if( ! $getDestCode ) {
                 return false;
@@ -695,13 +738,14 @@ class COD {
             $product_weight    = intval( $product->shipping['weight'] );
             $weight_cost       = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
             $weight_cost       = ( 0 === $weight_cost ) ? 1 : $weight_cost;
-            $tariff            = $this->get_tariff_info( $origin, $destination, $weight_cost );
+            $tariff            = $this->get_arveoli_tariff_info( $expedition = 'jne', $origin, $destination, $weight_cost );
             $cart_detail       = apply_filters( 'sejoli/order/cart-detail', [], $post_data );
             $markup_percentage = 0.04;
             $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : 0;
             $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : 0;
             $get_product_total = isset( $variant_price ) ? $product->price + $variant_price : $product->price;
             $markup_fee        = $get_product_total * $markup_percentage;
+            
             // if( true === $is_cod_locally ) :
                 
             //     $city_cover  = carbon_get_post_meta( $product_id, 'shipment_cod_jne_city');
@@ -716,12 +760,12 @@ class COD {
                     return false;
                 }
 
-                if( is_array( $tariff->tariff_data ) && count( $tariff->tariff_data ) > 0 ) {
+                if( $tariff ) {
 
-                    foreach ( $tariff->tariff_data as $rate ) {
+                    foreach ( $tariff->tariff_data->price as $key => $rate ) {
 
                         if( \in_array( $rate->service_code, $this->get_jne_services($product_id) ) ) {
-                            
+
                             if( false !== $markup_ongkir ) {
                                 $price = ($rate->price + $markup_fee) * $weight_cost; 
                             } else {
@@ -816,7 +860,7 @@ class COD {
             $product_weight    = intval( $product->shipping['weight'] );
             $weight_cost       = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
             $weight_cost       = ( 0 === $weight_cost ) ? 1 : $weight_cost;
-            $tariff            = $this->get_sicepat_tariff_info( $origin, $destination, $weight_cost );
+            $tariff            = $this->get_sicepat_tariff_info( $expedition = 'sicepat', $origin, $destination, $weight_cost );
             $cart_detail       = apply_filters( 'sejoli/order/cart-detail', [], $post_data );
             $markup_percentage = 0.08;
             $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : 0;
@@ -840,9 +884,9 @@ class COD {
 
                 if($get_product_total >= 5000 && $get_product_total <= 15000000) :
 
-                    if( is_array( $tariff->tariff_data ) && count( $tariff->tariff_data ) > 0 ) {
+                    if( $tariff ) {
 
-                        foreach ( $tariff->tariff_data as $rate ) {
+                        foreach ( $tariff->tariff_data->price as $key => $rate ) {
                            
                             if( \in_array( $rate->service, $this->get_sicepat_services($product_id) ) ) {
                                 
