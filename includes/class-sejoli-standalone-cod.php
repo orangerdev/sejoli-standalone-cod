@@ -160,6 +160,7 @@ class Sejoli_Standalone_Cod {
 		require_once SEJOLI_STANDALONE_COD_DIR . 'includes/class-sejoli-standalone-cod-order-webhook.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-saas.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-jne.php';
+		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-arveoli.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-sicepat.php';
 
 		/**
