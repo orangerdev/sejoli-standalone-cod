@@ -447,7 +447,7 @@ class SCOD {
      *
      * @return 	(array|WP_Error) The response array or a WP_Error on failure
      */
-	public function post_update_order( $order_id, $status, $shipNumber ) {
+	public function post_update_order( $params ) {
 
 		error_log( 'Updating order data ..' );
 		

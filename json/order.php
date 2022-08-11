@@ -295,8 +295,6 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 $params['codflag']             = $codflag;
                 $params['codAmount']           = $order['grand_total'];
                 $params['shippingPrice']       = $shipping_fee;
-
-                error_log(print_r($params, true));
      
             endif;
 
@@ -314,7 +312,27 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 if ( ! is_wp_error( $do_update ) ) {
 
                     $respond['valid']  = true;
-                    $number_resi = $do_update->cnote;
+                    $number_resi = $do_update->no_resi;
+
+                    $status = "on-the-way";
+
+                    $order_params = array(
+                        'invoice_number'  => $params['orderID'],
+                        'shipping_status' => $status,
+                        'shipping_number' => $number_resi
+                    );
+
+                    // Send data to API
+                    $api_scod     = new API_SCOD();
+                    $update_order = $api_scod->post_update_order( $order_params );
+                    
+                    if( ! is_wp_error( $update_order ) ) {
+                        // Flag the action as done (to avoid repetitions on reload for example)
+                        // $order->update_meta_data( '_sync_order_action_scod_done', true );
+                        error_log( 'Sync order success ..' );
+                    } else {
+                        error_log( 'Sync order error .. ' );
+                    }
 
                     echo wp_send_json( $number_resi );
 
