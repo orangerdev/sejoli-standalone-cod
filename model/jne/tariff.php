@@ -59,30 +59,6 @@ class Tariff extends Eloquent {
     }
 
     /**
-     * Define relationship with Origin model
-     *
-     * @since    1.0.0
-     * @return  string
-     */
-    public function origin() {
-    
-        return $this->belongsTo( 'Sejoli_Standalone_Cod\Model\JNE\Origin', 'jne_origin_id' );
-    
-    }
-
-    /**
-     * Define relationship with Destination model
-     *
-     * @since    1.0.0
-     * @return  string
-     */
-    public function destination() {
-    
-        return $this->belongsTo( 'Sejoli_Standalone_Cod\Model\JNE\Destination', 'jne_destination_id' );
-    
-    }
-
-    /**
      * Get tariff label.
      *
      * @param   $rate array of service information

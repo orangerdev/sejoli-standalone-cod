@@ -10,7 +10,7 @@
   	<input type="text" id="shipment-number" name="shipment-number" value="">
   	<br>
   	<input type="submit" name="submit-tracking" value="Search" >
-</form>';
+</form>
  
 <div id="shipment-history"></div>
 

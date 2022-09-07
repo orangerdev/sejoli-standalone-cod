@@ -3,8 +3,6 @@ namespace Sejoli_Standalone_Cod\JSON;
 
 use \WeDevs\ORM\Eloquent\Facades\DB;
 use Sejoli_Standalone_Cod\API\SCOD as API_SCOD;
-use Sejoli_Standalone_Cod\API\JNE as API_JNE;
-use Sejoli_Standalone_Cod\API\SiCepat as API_SICEPAT;
 use Sejoli_Standalone_Cod\API\ARVEOLI as API_ARVEOLI;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -67,6 +65,132 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
     }
 
     /**
+     * Get origin detail
+     * @since   1.0.0
+     * @param   integer     $subdistrict_id     District ID
+     * @return  array|null  District detail
+     */
+    public function get_origin( $expedition, $city ) {
+
+        if( $city && $expedition === 'jne' ) :
+
+            ob_start();
+
+            require SEJOLI_STANDALONE_COD_DIR . 'json/json_origin_JNE.json';
+            $json_data = ob_get_contents();
+            
+            ob_end_clean();
+
+            $origins = json_decode( $json_data, true );
+            $current_origin = array();
+
+            foreach( $origins as $data ):
+                if( \str_contains( strtolower( $city ), strtolower( $data['originname'] ) ) ) {
+                    $current_origin = $data;
+
+                    break;
+                } else {
+                    $current_origin = null;
+                }
+            endforeach;
+
+            return $current_origin;
+
+        endif;
+
+        if( $city && $expedition === 'sicepat' ) :
+
+            ob_start();
+
+            require SEJOLI_STANDALONE_COD_DIR . 'json/json_origin_sicepat.json';
+            $json_data = ob_get_contents();
+            
+            ob_end_clean();
+
+            $origins = json_decode( $json_data, true );
+            $current_origin = array();
+
+            foreach( $origins as $data ):
+                if( \str_contains( strtolower( $city ), strtolower( $data['origin_name'] ) ) ) {
+                    $current_origin = $data;
+
+                    break;
+                } else {
+                    $current_origin = null;
+                }
+            endforeach;
+
+            return $current_origin;
+
+        endif;
+
+        return NULL;
+
+    }
+
+    /**
+     * Get destination detail
+     * @since   1.0.0
+     * @param   integer     $subdistrict_id     District ID
+     * @return  array|null  District detail
+     */
+    public function get_destination( $expedition, $district ) {
+
+        if( $district && $expedition === 'jne' ) :
+
+            ob_start();
+
+            require SEJOLI_STANDALONE_COD_DIR . 'json/json_dest_jne.json';
+            $json_data = ob_get_contents();
+            
+            ob_end_clean();
+
+            $destinations   = json_decode( $json_data, true );
+
+            foreach( $destinations as $data ):
+                if( \str_contains( strtolower( $district ), strtolower( $data['district_name'] ) ) ) {
+                    $current_destination = $data;
+
+                    break;
+                } else {
+                    $current_destination = null;
+                }
+            endforeach;
+
+            return $current_destination;
+
+        endif;
+
+        if( $district && $expedition === 'sicepat' ) :
+
+            ob_start();
+
+            require SEJOLI_STANDALONE_COD_DIR . 'json/json_dest_sicepat.json';
+            $json_data = ob_get_contents();
+            
+            ob_end_clean();
+
+            $destinations   = json_decode( $json_data, true );
+
+            foreach( $destinations as $data ):
+                if( \str_contains( strtolower( $district ), strtolower( $data['subdistrict'] ) ) ) {
+                    $current_destination = $data;
+
+                    break;
+                } else {
+                    $current_destination = null;
+                }
+            endforeach;
+
+            return $current_destination;
+
+        endif;
+
+        return NULL;
+
+    }
+
+    /**
      * Process Pickup Generate Resi COD JNE
      * Hooked via wp_ajax_sejoli-order-pickup-generate-resi, priority 1
      * @since   1.0.0
@@ -94,6 +218,8 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 'shipperPhone'        => NULL,
                 'shipperAddress'      => NULL,
                 'shipperCity'         => NULL,
+                'shipperProvince'     => NULL,
+                'shipperDistrict'     => NULL,
                 'shipperZip'          => NULL,
                 'receiverName'        => NULL,
                 'receiverPhone'       => NULL,
@@ -138,48 +264,43 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                         $shipping_service = "REG";
                     } elseif($shipping_name === "JNE OKE") {
                         $shipping_service = "OKE";
+                    } elseif($shipping_name === "JNE YES") {
+                        $shipping_service = "YES";
                     } else {
                         $shipping_service = "JTR";
                     }
+                    
                     $receiver_destination_id   = $order['meta_data']['shipping_data']['district_id'];
                     $receiver_destination_city = $this->get_subdistrict_detail($receiver_destination_id);
-                    $getDestCode = DB::table( 'sejolisa_shipping_jne_destination' )
-                            ->where( 'city_id', $receiver_destination_city['city_id'] )
-                            ->where( 'district_id', $receiver_destination_city['subdistrict_id'] )
-                            ->get();        
+                    $getDestCode               = $this->get_destination( $expedition = 'jne', $receiver_destination_city['subdistrict_name'] );           
 
                     if( ! $getDestCode ) {
                         return false;
                     }
 
-                    $receiver_destination = $getDestCode[0];
+                    $receiver_destination = $getDestCode['tariff_code'];
 
                     if( ! $receiver_destination ) {
                         return false;
                     }
-                    // $receiver_destination      = JNE_Destination::where( 'city_id', $receiver_destination_city['city_id'] )->first();
                     
                     $shipper_origin_id   = $order['product']->cod['cod-origin'];
                     $shipper_origin_city = $this->get_subdistrict_detail($shipper_origin_id);
-                    $getOriginCode = DB::table( 'sejolisa_shipping_jne_origin' )
-                            ->where( 'city_id', $shipper_origin_city['city_id'] )
-                            ->get();        
+                    $getOriginCode       = $this->get_origin( $expedition = 'jne', $shipper_origin_city['city'] );    
 
                     if( ! $getOriginCode ) {
                         return false;
                     }
 
-                    $shipper_origin = $getOriginCode[0];
+                    $shipper_origin = $getOriginCode['origincode'];
 
                     if( ! $shipper_origin ) {
                         return false;
                     }
-                    // $shipper_origin            = JNE_Origin::where( 'city_id', $shipper_origin_city['city_id'] )->first(); 
+
                     $expedition = "jne";
 
-                    // $getBranch = API_ARVEOLI::set_params()->get_origin( $shipper_origin_city['city'] );
-                    $getBranch = API_ARVEOLI::set_params()->get_origin( 'jakarta' );
-                    $branch = $getBranch[0]->branchcode;
+                    $branch = $getOriginCode['branchcode'];
 
                 elseif (strpos( $checkCourierService, 'SICEPAT' ) !== false) :
 
@@ -187,20 +308,29 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                         $shipping_service = "GOKIL";
                     } elseif($shipping_name === "SICEPAT SIUNT") {
                         $shipping_service = "SIUNT";
+                    } elseif($shipping_name === "SICEPAT BEST") {
+                        $shipping_service = "BEST";
+                    } elseif($shipping_name === "SICEPAT CARGO") {
+                        $shipping_service = "CARGO";
+                    } elseif($shipping_name === "SICEPAT KEPO") {
+                        $shipping_service = "KEPO";
+                    } elseif($shipping_name === "SICEPAT HALU") {
+                        $shipping_service = "HALU";
+                    } elseif($shipping_name === "SICEPAT SDS") {
+                        $shipping_service = "SDS";
+                    } else {
+                        $shipping_service = "REGULAR";
                     }
 
                     $receiver_destination_id   = $order['meta_data']['shipping_data']['district_id'];
                     $receiver_destination_city = $this->get_subdistrict_detail($receiver_destination_id);
-                    $getDestCode = DB::table( 'sejolisa_shipping_sicepat_destination' )
-                            ->where( 'city_id', $receiver_destination_city['city_id'] )
-                            ->where( 'district_id', $receiver_destination_city['subdistrict_id'] )
-                            ->get();        
+                    $getDestCode               = $this->get_destination( $expedition = 'sicepat', $receiver_destination_city['subdistrict_name'] );     
 
                     if( ! $getDestCode ) {
                         return false;
                     }
 
-                    $receiver_destination = $getDestCode[0];
+                    $receiver_destination = $getDestCode['destination_code'];
 
                     if( ! $receiver_destination ) {
                         return false;
@@ -208,15 +338,13 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
                     $shipper_origin_id   = $order['product']->cod['cod-origin'];
                     $shipper_origin_city = $this->get_subdistrict_detail($shipper_origin_id);
-                    $getOriginCode = DB::table( 'sejolisa_shipping_sicepat_origin' )
-                            ->where( 'city_id', $shipper_origin_city['city_id'] )
-                            ->get();        
+                    $getOriginCode       = $this->get_origin( $expedition = 'sicepat', $shipper_origin_city['city'] );    
 
                     if( ! $getOriginCode ) {
                         return false;
                     }
 
-                    $shipper_origin = $getOriginCode[0];
+                    $shipper_origin = $getOriginCode['origin_code'];
 
                     if( ! $shipper_origin ) {
                         return false;
@@ -224,9 +352,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
                     $expedition = "sicepat";
 
-                    // $getBranch = API_ARVEOLI::set_params()->get_origin( $shipper_origin_city['city'] );
-                    $getBranch = API_ARVEOLI::set_params()->get_origin( 'jakarta' );
-                    $branch = $getBranch[0]->branchcode;
+                    $branch = $getOriginCode['origin_code'];
 
                 endif;
 
@@ -253,10 +379,17 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 
                 $shipper_name    = carbon_get_post_meta($product_id, 'sejoli_store_name');
                 $shipper_address = $order['meta_data']['shipping_data']['address'];
+                $shipper_district  = $shipper_origin_city['subdistrict_name'];
+                $shipper_city      = $shipper_origin_city['type'].' '.$shipper_origin_city['city'];
+                $shipper_province  = $shipper_origin_city['province'];
                 $shipper_zip     = carbon_get_post_meta($product_id, 'sejoli_store_postal_code');
                 $shipper_phone   = carbon_get_post_meta($product_id, 'sejoli_store_phone');
                 $insurance       = "0";
-                $codflag         = "1";
+                if($order['payment_gateway'] === 'cod') {
+                    $codflag = "1";
+                } else {
+                    $codflag = "0";
+                }
                 $note            = 'Mohon Segera Diproses...';
 
                 $params['orderID']             = $params['invoice_number'];
@@ -265,7 +398,9 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 $params['expedition']          = $expedition;
                 $params['shipperPhone']        = $shipper_phone;
                 $params['shipperAddress']      = $shipper_address;
-                $params['shipperCity']         = $shipper_origin_city['city'];
+                $params['shipperCity']         = $shipper_city;
+                $params['shipperProvince']     = $shipper_province;
+                $params['shipperDistrict']     = $shipper_district;
                 $params['shipperZip']          = $shipper_zip;
                 $params['receiverName']        = $receiver_name;
                 $params['receiverPhone']       = $receiver_phone;
@@ -277,11 +412,11 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 $params['receiverDistrict']    = $receiver_destination_city['subdistrict_name'];
                 $params['receiverSubdistrict'] = $receiver_destination_city['subdistrict_name'];
                 if (strpos( $checkCourierService, 'JNE' ) !== false) {
-                    $params['origin']          = $shipper_origin->code;
-                    $params['destination']     = $receiver_destination->code;
+                    $params['origin']          = $shipper_origin;
+                    $params['destination']     = $receiver_destination;
                 } elseif (strpos( $checkCourierService, 'SICEPAT' ) !== false) {
-                    $params['origin']          = $shipper_origin->origin_code;
-                    $params['destination']     = $receiver_destination->destination_code;
+                    $params['origin']          = $shipper_origin;
+                    $params['destination']     = $receiver_destination;
                 }
                 $params['branch']              = $branch;
                 $params['service']             = $shipping_service;
@@ -293,7 +428,11 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 $params['insurance']           = $insurance;
                 $params['note']                = $note;
                 $params['codflag']             = $codflag;
-                $params['codAmount']           = $order['grand_total'];
+                if($order['payment_gateway'] === 'cod') {
+                    $params['codAmount']       = $order['grand_total'];
+                } else {
+                    $params['codAmount']       = 0;
+                }
                 $params['shippingPrice']       = $shipping_fee;
      
             endif;
@@ -395,13 +534,10 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 $order_id               = $result->ID; // The Order ID
                 $meta_data              = unserialize($result->meta_data);
                 $shipping_number        = (isset($meta_data['shipping_data']['resi_number'])) ? $meta_data['shipping_data']['resi_number'] : '';
-                // $trace_tracking_jne     = API_JNE::set_params()->get_tracking( $shipping_number );
-                // $trace_tracking_sicepat = API_SICEPAT::set_params()->get_tracking( $shipping_number );
                 
-                // $trace_tracking_arveoli_jne = API_ARVEOLI::set_params()->get_tracking( 'jne', $shipping_number );
-                $trace_tracking_arveoli_jne     = API_ARVEOLI::set_params()->get_tracking( 'jne', '001708802337' );
-                // $trace_tracking_arveoli_sicepat = API_ARVEOLI::set_params()->get_tracking( 'sicepat', $shipping_number );
-                $trace_tracking_arveoli_sicepat = API_ARVEOLI::set_params()->get_tracking( 'sicepat', '001708802337' );
+                $trace_tracking_arveoli_jne = API_ARVEOLI::set_params()->get_tracking( 'jne', $shipping_number );
+
+                $trace_tracking_arveoli_sicepat = API_ARVEOLI::set_params()->get_tracking( 'sicepat', $shipping_number );
 
                 $tracking_pod_status_jne = ( isset($trace_tracking_arveoli_jne->jne->result->last_status->status) ? $trace_tracking_arveoli_jne->jne->result->last_status->status : false );
                 if( false !== $tracking_pod_status_jne ) :
@@ -511,40 +647,39 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     $shipping_service = "REG";
                 } elseif($shipping_name === "JNE OKE") {
                     $shipping_service = "OKE";
+                } elseif($shipping_name === "JNE YES") {
+                    $shipping_service = "YES";
                 } else {
                     $shipping_service = "JTR";
-                }
+                }  
 
-                $getDestCode = DB::table( 'sejolisa_shipping_jne_destination' )
-                        ->where( 'city_id', $receiver_destination_city['city_id'] )
-                        ->where( 'district_id', $receiver_destination_city['subdistrict_id'] )
-                        ->get();        
+                $getDestCode = $this->get_destination( $expedition = 'jne', $receiver_destination_city['subdistrict_name'] );    
 
                 if( ! $getDestCode ) {
                     return false;
                 }
 
-                $receiver_destination = $getDestCode[0]->code;
+                $receiver_destination = $getDestCode['tariff_code'];
 
                 if( ! $receiver_destination ) {
                     return false;
                 }
 
-                $getOriginCode = DB::table( 'sejolisa_shipping_jne_origin' )
-                        ->where( 'city_id', $shipper_origin_city['city_id'] )
-                        ->get();        
+                $getOriginCode = $this->get_origin( $expedition = 'jne', $shipper_origin_city['city'] );
 
                 if( ! $getOriginCode ) {
                     return false;
                 }
 
-                $shipper_origin = $getOriginCode[0]->code;
+                $shipper_origin = $getOriginCode['origincode'];   
 
                 if( ! $shipper_origin ) {
                     return false;
                 }
 
                 $expedition = 'jne';
+
+                $branch = $getOriginCode['branchcode'];
 
             endif;
 
@@ -555,38 +690,47 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     $shipping_service = "GOKIL";
                 } elseif($shipping_name === "SICEPAT SIUNT") {
                     $shipping_service = "SIUNT";
+                } elseif($shipping_name === "SICEPAT BEST") {
+                    $shipping_service = "BEST";
+                } elseif($shipping_name === "SICEPAT CARGO") {
+                    $shipping_service = "CARGO";
+                } elseif($shipping_name === "SICEPAT KEPO") {
+                    $shipping_service = "KEPO";
+                } elseif($shipping_name === "SICEPAT HALU") {
+                    $shipping_service = "HALU";
+                } elseif($shipping_name === "SICEPAT SDS") {
+                    $shipping_service = "SDS";
+                } else {
+                    $shipping_service = "REGULAR";
                 }
 
-                $getOriginCode = DB::table( 'sejolisa_shipping_sicepat_origin' )
-                        ->where( 'city_id', $shipper_origin_city['city_id'] )
-                        ->get();        
+                $getOriginCode = $this->get_origin( $expedition = 'sicepat', $shipper_origin_city['city'] );
 
                 if( ! $getOriginCode ) {
                     return false;
                 }
 
-                $shipper_origin = $getOriginCode[0];
+                $shipper_origin = $getOriginCode['origin_code'];   
 
                 if( ! $shipper_origin ) {
                     return false;
                 }
 
-                $getDestCode = DB::table( 'sejolisa_shipping_sicepat_destination' )
-                        ->where( 'city_id', $receiver_destination_city['city_id'] )
-                        ->where( 'district_id', $receiver_destination_city['subdistrict_id'] )
-                        ->get();        
+                $getDestCode = $this->get_destination( $expedition = 'sicepat', $receiver_destination_city['subdistrict_name'] );     
 
                 if( ! $getDestCode ) {
                     return false;
                 }
 
-                $receiver_destination = $getDestCode[0];
+                $receiver_destination = $getDestCode['destination_code'];
 
                 if( ! $receiver_destination ) {
                     return false;
                 }
 
                 $expedition = 'sicepat';
+
+                $branch = $getOriginCode['origin_code'];
 
             endif;
 
@@ -601,14 +745,30 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $shipping_cost     = $order['meta_data']['shipping_data']['cost'];
             $getGapMarkup      = ($order['grand_total'] - $shipping_cost) * 0.04;
             $markup_price      = $order['meta_data']['markup_price'];
-            if($markup_price > 0){
-                $cod_fee       = $markup_price;
-                $shipping_fee  = $shipping_cost;
-                $packageAmount = ($order['grand_total'] - $order['meta_data']['shipping_data']['cost']) - $markup_price;
+            if($order['payment_gateway'] === 'cod') {
+                $codflag   = "1";
+                $codamount = $order['grand_total'];
+                if($markup_price > 0){
+                    $cod_fee       = $markup_price;
+                    $shipping_fee  = $shipping_cost;
+                    $packageAmount = ($order['grand_total'] - $order['meta_data']['shipping_data']['cost']) - $markup_price;
+                } else {
+                    $cod_fee       = $getGapMarkup;
+                    $shipping_fee  = $shipping_cost - $getGapMarkup;
+                    $packageAmount = ($order['grand_total'] - $order['meta_data']['shipping_data']['cost']);
+                }
             } else {
-                $cod_fee       = $getGapMarkup;
-                $shipping_fee  = $shipping_cost - $getGapMarkup;
-                $packageAmount = ($order['grand_total'] - $order['meta_data']['shipping_data']['cost']);
+                $codflag   = "0";
+                $codamount = 0;
+                if($markup_price > 0){
+                    $cod_fee       = 0;
+                    $shipping_fee  = $shipping_cost;
+                    $packageAmount = ($order['grand_total'] - $order['meta_data']['shipping_data']['cost']) - $markup_price;
+                } else {
+                    $cod_fee       = 0;
+                    $shipping_fee  = $shipping_cost;
+                    $packageAmount = ($order['grand_total'] - $order['meta_data']['shipping_data']['cost']);
+                }
             }
             $product_name      = $order['product']->post_title;
             $product_price     = $order['product']->price;
@@ -627,11 +787,6 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             $buyer_email       = $order['user']->data->user_email;
             $buyer_phone       = $order['user']->data->meta->phone;
             $insurance         = "0";
-            $codflag           = "1";
-
-            // $getBranch = API_ARVEOLI::set_params()->get_origin( $shipper_origin_city['city'] );
-            $getBranch = API_ARVEOLI::set_params()->get_origin( 'jakarta' );
-            $branch = $getBranch[0]->branchcode;
 
             // Default params            
             $order_params = array(
@@ -673,7 +828,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 'branch'               => $branch,
                 'service'              => $shipping_service,
                 'codflag'              => $codflag,
-                'codamount'            => $order['grand_total'],
+                'codamount'            => $codamount,
                 'invoice_total'        => $order['grand_total'],
                 'shipping_fee'         => $shipping_fee,
                 'cod_fee'              => $cod_fee,

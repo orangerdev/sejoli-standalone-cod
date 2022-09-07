@@ -38,7 +38,20 @@
 
 	// });
 
+	$(document).ready(function(){
+
+		if($().select2) {
+			let shipment_cod_origin = sejoli.helper.select_2(
+					"select[name='carbon_fields_compact_input[_shipment_cod_origin]']",
+					sejoli_admin.get_subdistricts.ajaxurl,
+					sejoli_admin.get_subdistricts.placeholder
+				)
+		}
+
+	});
+
 	$(document).on('click', '.update-order', function(){
+        
         let proceed  = true;
         let order_id = [];
         let status   = $(this).parent().find('select[name=update-order-select]').val();
@@ -51,33 +64,7 @@
 		$("tbody input[type=checkbox]:checked").each(function(i, el){
             order_id.push($(el).data('id'));
         });
-            
-        // if('' === status) {
-        //     alert('<?php _e('Anda belum memilih aksi', 'sejoli'); ?>');
-        //     return;
-        // }
 
-        // if('shipping' != status) {
-        //     proceed = confirm('Anda yakin akan melakukan update pada order yang dipilih?');
-        // }
-
-        // if(proceed) {
-
-        //     $("tbody input[type=checkbox]:checked").each(function(i, el){
-        //         order_id.push($(el).data('id'));
-        //     });
-
-        //     if(0 < order_id.length) {
-        //         if('shipping' === status) {
-        //             sejoli_check_shipping(order_id);
-        //         } else {
-        //             sejoli_direct_update(order_id, status);
-        //         }
-        //     } else {
-        //         alert('<?php _e('Anda belum memilih order', 'sejoli'); ?>');
-        //         return;
-        //     }
-        // }
     });
 
 	$(document).on('click', '.sejolisa-confirm-order-pickup', function(){
@@ -88,9 +75,6 @@
     	let nonce 		   = sejoli_cod_jne.pickup_generate_resi.nonce;
 
     	if (confirm('Apakah Anda yakin ingin melakukan proses request pickup order id #'+invoice_number+'?')) {
-			// Save it!
-			console.log('Requesting Pickup Succesfull.');
-
 			//Get detail request
 	    	$.ajax({
 	    		dataType: "json",
@@ -100,22 +84,33 @@
 	                invoice_number: invoice_number,
 	                nonce:  nonce
 	            },
+	            beforeSend : function() {
+                    sejoli.helper.blockUI('.order-shipping-modal-holder');
+                },
 	            success : function(response) {
-	                if(response == null) {
+	            	sejoli.helper.unblockUI('.order-shipping-modal-holder');
+	                if(response === null) {
 	                	alert('Gagal Mendapatkan No Resi!');
 	                	window.location.reload();
 	                } else {
-	                	alert('No. Resi: ' + response);
-						$('.sejolisa-confirm-order-pickup').hide();
-						$('.noresi').val(response);
-						$('.label-resi').show();
-						$('.no-resi').html(response);
-						$('.sejolisa-confirm-order-shipping').attr('style', 'display: none !important');
-						$('.sejolisa-confirm-order-shipping').trigger("click");
+	                	if(response > 0) {
+		                	alert('No. Resi: ' + response);
+							$('.sejolisa-confirm-order-pickup').hide();
+							$('.noresi').val(response);
+							$('.label-resi').show();
+							$('.no-resi').html(response);
+							$('.sejolisa-confirm-order-shipping').attr('style', 'display: none !important');
+							$('.sejolisa-confirm-order-shipping').trigger("click");
+	                	} else {
+	                		alert('Gagal Mendapatkan No Resi!');
+	                		window.location.reload();
+	                	}
 	                }
 	            },
 	            error: function (request, status, error) {
-	                console.log(error);
+	                // console.log(error);
+	                alert('Gagal Mendapatkan No Resi!');
+	                window.location.reload();
 	            }
 	        });
 

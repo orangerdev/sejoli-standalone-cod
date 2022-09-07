@@ -30,10 +30,12 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
      */
 	public static function set_sandbox_data() {
 
-		$api_key = '0o4k0gs4o0kwg8cs840oskwscc4k0g4swwww8804';
+		$access_key = 'c8gk4wggsoock40gkwo4kc8c8swo08g04scwkcos';
+		$app_key    = 'cxrucexvrel5QLO0LFfRlAMXXPLKsAv0sT5VifKq';
 
 		self::$headers = array(
-			'access-key' => $api_key
+			'access-key' => $access_key,
+			'app-key'    => $app_key
 		);
 
 	}
@@ -45,10 +47,12 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
      */
 	public static function set_live_data() {
 
-		$api_key = '0o4k0gs4o0kwg8cs840oskwscc4k0g4swwww8804';
+		$access_key = 'c8gk4wggsoock40gkwo4kc8c8swo08g04scwkcos';
+		$app_key    = 'cxrucexvrel5QLO0LFfRlAMXXPLKsAv0sT5VifKq';
 
 		self::$headers = array(
-			'access-key' => $api_key
+			'access-key' => $access_key,
+			'app-key'    => $app_key
 		);
 
 	}
@@ -109,11 +113,11 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
      * 
      * @return 	(array|WP_Error) The response array or a WP_Error on failure
      */
-	public static function get_origin( string $city ) {
+	public static function get_origin( string $expedition, string $city ) {
 
 		try {
 
-			self::$endpoint = 'https://sandbox.arveoli.com/api/region/origins/jne?query='.$city;
+			self::$endpoint = 'https://sandbox.arveoli.com/api/region/origins/'.$expedition.'?query='.$city;
 			self::$method 	= 'GET';
 
 			$get_response = self::do_request();
@@ -168,11 +172,11 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
      *
      * @return 	(array|WP_Error) The response array or a WP_Error on failure
      */
-	public function get_destination( string $city, string $district ) {
+	public function get_destination( string $expedition, string $city, string $district ) {
 
 		try {
 
-			self::$endpoint = 'https://sandbox.arveoli.com/api/region/destinations/jne/'.$city.'/'.$district;
+			self::$endpoint = 'https://sandbox.arveoli.com/api/region/destinations/'.$expedition.'/'.$city.'/'.$district;
 			self::$method 	= 'GET';
 
 			$get_response = self::do_request();
@@ -302,7 +306,7 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
 			self::$method 	= 'POST';
 
 			$pickupDataArray = array(
-				"expedition" => "sicepat",
+				"expedition" => $pickupParams['expedition'],
 			  	"cod" 		 => $pickupParams['codflag'],
 			  	"insurance"  => $pickupParams['insurance'],
 			  	"sender" 	 => array(
@@ -311,8 +315,8 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
 			    	"address" 	 => $pickupParams['shipperAddress'],
 			    	"city" 		 => $pickupParams['shipperCity'],
 			    	"postal" 	 => $pickupParams['shipperZip'],
-			    	"origincode" => "CGK",
-			    	"branchcode" => "CGK000"
+			    	"origincode" => $pickupParams['origin'],
+			    	"branchcode" => $pickupParams['branch']
 			  	),
 			  	"recipient" => array(
 			    	"name"			  => $pickupParams['receiverName'],
@@ -324,30 +328,30 @@ class ARVEOLI extends \Sejoli_Standalone_Cod\API {
 				    "city"			  => $pickupParams['receiverCity'],
 				    "province"		  => $pickupParams['receiverProvince'],
 				    "postal"		  => $pickupParams['receiverZip'],
-				    "service"		  => "SIUNT",
+				    "service"		  => $pickupParams['service'],
 				    "cost"			  => $pickupParams['shippingPrice'],
-				    "destinationcode" => "BDO10000"
+				    "destinationcode" => $pickupParams['destination']
 				),
 			  	"goods" => array(
 				    "description" => $pickupParams['description'],
 				    "quantity" 	  => $pickupParams['qty'],
 				    "weight"	  => $pickupParams['weight'],
-				    "value"		  => $pickupParams['packageAmount'], // new
+				    "value"		  => $pickupParams['packageAmount'],
 				    "notes"		  => "Mohon Segera Diproses, Terima Kasih",
-				    "category"	  => $pickupParams['category'], // new
+				    "category"	  => $pickupParams['category'],
 				    "cod"		  => $pickupParams['codAmount']
 			  	),
 			  	"pickup" => array(
-				    "name"     => "arya",
+				    "name"     => $pickupParams['shipperName'],
 				    "date"	   => date('d-m-Y'),
 				    "time"	   => date('H:i'),
-				    "pic"	   => "TEAS",
-				    "picphone" => "6289100000002",
-				    "address"  => "JAKARTA",
-				    "district" => "JAKARTA",
-				    "city"     => "JAKARTA",
-				    "province" => "DKI JAKARTA",
-				    "service"  => "Reguler",
+				    "pic"	   => $pickupParams['shipperName'],
+				    "picphone" => $pickupParams['shipperPhone'],
+				    "address"  => $pickupParams['shipperAddress'],
+				    "district" => $pickupParams['shipperDistrict'],
+				    "city"     => $pickupParams['shipperCity'],
+				    "province" => $pickupParams['shipperProvince'],
+				    "service"  => 'Reguler',
 				    "vehicle"  => "MOTOR"
 			  	)
 			);

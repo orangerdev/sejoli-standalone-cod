@@ -28,7 +28,7 @@ Class Tariff extends \Sejoli_Standalone_Cod\Database {
             Capsule::schema()->create( self::table(), function( $table ){
 
                 $table->increments ('ID');
-                $table->integer    ('jne_origin_id');
+                $table->string     ('jne_origin_id');
                 $table->string     ('jne_destination_id');
                 $table->text       ('tariff_data');
                 $table->datetime   ('created_at');

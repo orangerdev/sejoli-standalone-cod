@@ -59,30 +59,6 @@ class Tariff extends Eloquent {
     }
 
     /**
-     * Define relationship with Origin model
-     *
-     * @since    1.0.0
-     * @return  string
-     */
-    public function origin() {
-       
-        return $this->belongsTo( 'SCOD_Shipping\Model\SiCepat\Origin', 'sicepat_origin_id' );
-    
-    }
-
-    /**
-     * Define relationship with Destination model
-     *
-     * @since    1.0.0
-     * @return  string
-     */
-    public function destination() {
-
-        return $this->belongsTo( 'SCOD_Shipping\Model\SiCepat\Destination', 'sicepat_destination_id' );
-    
-    }
-
-    /**
      * Get tariff label.
      *
      * @param   $rate array of service information

@@ -1,7 +1,6 @@
 <?php
 namespace Sejoli_Standalone_Cod\API;
 
-// use Sejoli_Standalone_Cod\Shipping_Method;
 /**
  * The admin-specific functionality of the plugin.
  *

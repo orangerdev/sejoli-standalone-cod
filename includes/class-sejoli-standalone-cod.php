@@ -127,17 +127,8 @@ class Sejoli_Standalone_Cod {
 		require_once SEJOLI_STANDALONE_COD_DIR . 'database/indonesia/state.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'database/indonesia/city.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'database/indonesia/district.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'database/jne/origin.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'database/jne/destination.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'database/jne/tariff.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'database/sicepat/origin.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'database/sicepat/destination.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'database/sicepat/tariff.php';
-
-		/**
-		 * The class responsible for database seed.
-		 */
-		require_once SEJOLI_STANDALONE_COD_DIR . 'database/indonesia/seed.php';
 
 		/**
 		 * The class responsible for database models.
@@ -146,11 +137,7 @@ class Sejoli_Standalone_Cod {
 		require_once SEJOLI_STANDALONE_COD_DIR . 'model/state.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'model/city.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'model/district.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'model/jne/origin.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'model/jne/destination.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'model/jne/tariff.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'model/sicepat/origin.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'model/sicepat/destination.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'model/sicepat/tariff.php';
 
 		/**
@@ -159,9 +146,7 @@ class Sejoli_Standalone_Cod {
 		require_once SEJOLI_STANDALONE_COD_DIR . 'includes/class-sejoli-standalone-cod-api.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'includes/class-sejoli-standalone-cod-order-webhook.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-saas.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-jne.php';
 		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-arveoli.php';
-		require_once SEJOLI_STANDALONE_COD_DIR . 'api/class-sejoli-standalone-cod-sicepat.php';
 
 		/**
 		 * The class responsible for defining all actions that work for json functions

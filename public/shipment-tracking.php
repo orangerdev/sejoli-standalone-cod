@@ -2,15 +2,9 @@
 namespace Sejoli_Standalone_Cod\Front;
 
 use \WeDevs\ORM\Eloquent\Facades\DB;
-use Sejoli_Standalone_Cod\Model\JNE\Origin as JNE_Origin;
-use Sejoli_Standalone_Cod\Model\JNE\Destination as JNE_Destination;
-use Sejoli_Standalone_Cod\Model\JNE\Tariff as JNE_Tariff;
-use Sejoli_Standalone_Cod\API\JNE as API_JNE;
-use Sejoli_Standalone_Cod\Model\SiCepat\Origin as SICEPAT_Origin;
-use Sejoli_Standalone_Cod\Model\SiCepat\Destination as SICEPAT_Destination;
-use Sejoli_Standalone_Cod\Model\SiCepat\Tariff as SICEPAT_Tariff;
-use Sejoli_Standalone_Cod\API\SiCepat as API_SICEPAT;
 use Sejoli_Standalone_Cod\API\ARVEOLI as API_ARVEOLI;
+use Sejoli_Standalone_Cod\Model\JNE\Tariff as JNE_Tariff;
+use Sejoli_Standalone_Cod\Model\SiCepat\Tariff as SICEPAT_Tariff;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 class ShipmentTracking {
@@ -81,22 +75,8 @@ class ShipmentTracking {
         if( wp_verify_nonce( $params['nonce'], 'sejoli_shipment_tracking_result') && !empty($params['shipmentExpedition']) && !empty($params['shipmentNumber']) ) :
 
             unset( $params['nonce'] );
-
-            // $trace_tracking_jne = API_JNE::set_params()->get_tracking( $params['shipmentNumber'] );
-            // $trace_tracking_sicepat = API_SICEPAT::set_params()->get_tracking( $params['shipmentNumber'] );
-
-            // if ( ! is_wp_error( $trace_tracking_jne ) || ! is_wp_error( $trace_tracking_sicepat ) ) {
-
-            //     $respond['valid']  = true;
-
-            // } else {
-
-            //     $respond['message'] = $trace_tracking_jne->get_error_message();
-            //     $respond['message'] = $trace_tracking_sicepat->get_error_message();
-            // }
              
-            // $trace_tracking_arveoli = API_ARVEOLI::set_params()->get_tracking( $params['shipmentExpedition'], $params['shipmentNumber'] );
-            $trace_tracking_arveoli = API_ARVEOLI::set_params()->get_tracking( 'sicepat', '001708802337' );
+            $trace_tracking_arveoli = API_ARVEOLI::set_params()->get_tracking( $params['shipmentExpedition'], $params['shipmentNumber'] );
 
             if ( ! is_wp_error( $trace_tracking_arveoli ) ) {
 

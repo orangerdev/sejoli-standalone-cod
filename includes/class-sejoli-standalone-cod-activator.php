@@ -34,17 +34,10 @@ class Sejoli_Standalone_Cod_Activator {
 		Sejoli_Standalone_Cod\Database\State::create_table();
 		Sejoli_Standalone_Cod\Database\City::create_table();
 		Sejoli_Standalone_Cod\Database\District::create_table();
-		
-		Sejoli_Standalone_Cod\Database\JNE\Origin::create_table();
-		Sejoli_Standalone_Cod\Database\JNE\Destination::create_table();
+
 		Sejoli_Standalone_Cod\Database\JNE\Tariff::create_table();
-
-		Sejoli_Standalone_Cod\Database\SiCepat\Origin::create_table();
-		Sejoli_Standalone_Cod\Database\SiCepat\Destination::create_table();
 		Sejoli_Standalone_Cod\Database\SiCepat\Tariff::create_table();
-
-		$seed = new Sejoli_Standalone_Cod\Database\Seed();
-
+		
 	}
 
 }
