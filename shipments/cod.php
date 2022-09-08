@@ -893,9 +893,7 @@ class COD {
                 }
 
                 if( $tariff ) {
-
-                    foreach ( $tariff->tariff_data->price as $key => $rate ) {
-
+                    foreach ( $tariff->tariff_data->data as $key => $rate ) {
                         if( \in_array( $rate->service_code, $this->get_jne_services($product_id) ) ) {
 
                             if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
@@ -904,24 +902,24 @@ class COD {
                                 $price = $rate->price * $weight_cost;
                             }
 
-                            if($rate->service_display === 'OKE'){
-                                $cod_title = 'JNE '.$rate->service_display. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_display;
+                            if($rate->service_name === 'OKE'){
+                                $cod_title = 'JNE '.$rate->service_name. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
+                                $key_title = 'JNE '.$rate->service_name;
                                 $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
                             }
-                            elseif($rate->service_display === 'REG'){
-                                $cod_title = 'JNE '.$rate->service_display. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_display;
+                            elseif($rate->service_name === 'REG'){
+                                $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
+                                $key_title = 'JNE '.$rate->service_name;
                                 $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
                             }
-                            elseif($rate->service_display === 'YES'){
-                                $cod_title = 'JNE '.$rate->service_display. __(' (Layanan Yakin Esok Sampai)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_display;
+                            elseif($rate->service_name === 'YES'){
+                                $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Yakin Esok Sampai)', 'sejoli-standalone-cod');
+                                $key_title = 'JNE '.$rate->service_name;
                                 $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
                             }
                             else{
-                                $cod_title = 'JNE '.$rate->service_display. __(' (Layanan Pengiriman Truk)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_display;
+                                $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Pengiriman Truk)', 'sejoli-standalone-cod');
+                                $key_title = 'JNE '.$rate->service_name;
                                 $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 3-4 Hari)';
                             }
                             
@@ -1012,34 +1010,34 @@ class COD {
 
                     if( $tariff ) {
 
-                        foreach ( $tariff->tariff_data->price as $key => $rate ) {
+                        foreach ( $tariff->tariff_data->data as $key => $rate ) {
                            
-                            if( \in_array( $rate->service, $this->get_sicepat_services($product_id) ) ) {
+                            if( \in_array( $rate->service_code, $this->get_sicepat_services($product_id) ) ) {
                                 
                                 if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
-                                    $price = ($rate->tariff + $markup_fee) * $weight_cost; 
+                                    $price = ($rate->price + $markup_fee) * $weight_cost; 
                                 } else {
-                                    $price = $rate->tariff * $weight_cost;
+                                    $price = $rate->price * $weight_cost;
                                 }
 
-                                if($rate->service === 'SIUNT'){
-                                    $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
-                                    $key_title = 'SICEPAT '.$rate->service;
+                                if($rate->service_code === 'SIUNT'){
+                                    $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                    $key_title = 'SICEPAT '.$rate->service_code;
                                     $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
                                 }
-                                elseif($rate->service === 'GOKIL'){
-                                    $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
-                                    $key_title = 'SICEPAT '.$rate->service;
+                                elseif($rate->service_code === 'GOKIL'){
+                                    $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                    $key_title = 'SICEPAT '.$rate->service_code;
                                     $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
                                 }
-                                elseif($rate->service === 'BEST'){
-                                    $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
-                                    $key_title = 'SICEPAT '.$rate->service;
+                                elseif($rate->service_code === 'BEST'){
+                                    $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                    $key_title = 'SICEPAT '.$rate->service_code;
                                     $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
                                 }
                                 else{
-                                    $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
-                                    $key_title = 'SICEPAT '.$rate->service;
+                                    $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                    $key_title = 'SICEPAT '.$rate->service_code;
                                     $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
                                 }
                                 
