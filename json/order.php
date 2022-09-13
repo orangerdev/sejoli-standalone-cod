@@ -539,7 +539,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
                 $trace_tracking_arveoli_sicepat = API_ARVEOLI::set_params()->get_tracking( 'sicepat', $shipping_number );
 
-                $tracking_pod_status_jne = ( isset($trace_tracking_arveoli_jne->cnote->pod_status) ? 89N3PDyZzakoH7W6n8ZrjGDDktjh8iWFG6eKRvi3kvpQ : false );
+                $tracking_pod_status_jne = ( isset($trace_tracking_arveoli_jne->cnote->pod_status) ? $trace_tracking_arveoli_jne->cnote->pod_status : false );
                 if( false !== $tracking_pod_status_jne ) :
                     if( $tracking_pod_status_jne === "DELIVERED" ){
                         // Process updating order status
