@@ -528,23 +528,23 @@ class COD {
                         ),
                     )),
 
-                // Field::make('checkbox', 'shipment_cod_jne_markup_with_ongkir', __('Biaya COD JNE Termasuk ke Ongkir?', 'sejoli-standalone-cod'))
-                //     ->set_option_value('yes')
-                //     ->set_default_value(true)
-                //     ->set_conditional_logic(array(
-                //         array(
-                //             'field' => 'shipment_cod_services_active',
-                //             'value' => true
-                //         ),
-                //         array(
-                //             'field' => 'product_type',
-                //             'value' => 'physical'
-                //         ),
-                //         array(
-                //             'field' => 'shipment_cod_jne_active',
-                //             'value' => true
-                //         ),
-                //     )),
+                Field::make('checkbox', 'shipment_cod_jne_markup_with_ongkir', __('Biaya COD JNE Termasuk ke Ongkir?', 'sejoli-standalone-cod'))
+                    ->set_option_value('yes')
+                    ->set_default_value(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
+                        ),
+                        array(
+                            'field' => 'shipment_cod_jne_active',
+                            'value' => true
+                        ),
+                    )),
 
                 Field::make('separator', 'sep_cod_sicepat_setting', __('Pengaturan Layanan Pengiriman SiCepat', 'sejoli-standalone-cod'))->set_conditional_logic(array(
                     array(
@@ -611,23 +611,23 @@ class COD {
                         ),
                     )),
 
-                // Field::make('checkbox', 'shipment_cod_sicepat_markup_with_ongkir', __('Biaya COD SiCepat Termasuk ke Ongkir?', 'sejoli-standalone-cod'))
-                //     ->set_option_value('yes')
-                //     ->set_default_value(true)
-                //     ->set_conditional_logic(array(
-                //         array(
-                //             'field' => 'shipment_cod_services_active',
-                //             'value' => true
-                //         ),
-                //         array(
-                //             'field' => 'product_type',
-                //             'value' => 'physical'
-                //         ),
-                //         array(
-                //             'field' => 'shipment_cod_sicepat_active',
-                //             'value' => true
-                //         ),
-                //     )),
+                Field::make('checkbox', 'shipment_cod_sicepat_markup_with_ongkir', __('Biaya COD SiCepat Termasuk ke Ongkir?', 'sejoli-standalone-cod'))
+                    ->set_option_value('yes')
+                    ->set_default_value(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
+                        ),
+                        array(
+                            'field' => 'shipment_cod_sicepat_active',
+                            'value' => true
+                        ),
+                    )),
             )
         );
 
