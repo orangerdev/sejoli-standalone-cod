@@ -896,35 +896,59 @@ class COD {
                     foreach ( $tariff->tariff_data->data as $key => $rate ) {
                         if( \in_array( $rate->service_code, $this->get_jne_services($product_id) ) ) {
 
+                            $price_w_markup = '';
                             if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
-                                $price = ($rate->price + $markup_fee) * $weight_cost; 
+                                $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
+                                $price = $rate->price * $weight_cost;
+
+                                if($rate->service_name === 'OKE'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
+                                }
+                                elseif($rate->service_name === 'REG'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                }
+                                elseif($rate->service_name === 'YES'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Yakin Esok Sampai)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
+                                }
+                                else{
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Pengiriman Truk)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 3-4 Hari)';
+                                }
                             } else {
                                 $price = $rate->price * $weight_cost;
-                            }
 
-                            if($rate->service_name === 'OKE'){
-                                $cod_title = 'JNE '.$rate->service_name. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_name;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
-                            }
-                            elseif($rate->service_name === 'REG'){
-                                $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_name;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
-                            }
-                            elseif($rate->service_name === 'YES'){
-                                $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Yakin Esok Sampai)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_name;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
-                            }
-                            else{
-                                $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Pengiriman Truk)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_name;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 3-4 Hari)';
+                                if($rate->service_name === 'OKE'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
+                                }
+                                elseif($rate->service_name === 'REG'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                }
+                                elseif($rate->service_name === 'YES'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Yakin Esok Sampai)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
+                                }
+                                else{
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Pengiriman Truk)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 3-4 Hari)';
+                                }
                             }
                             
                             if( false !== $is_cod_active && false !== $is_markup_cod_active ) {
-                                $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
+                                $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
+                                $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
                             } else {
                                 $key_options                    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
                             }
@@ -1065,7 +1089,8 @@ class COD {
                                 }
                                 
                                 if( false !== $is_cod_active && false !== $is_markup_cod_active ) {
-                                    $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
+                                    $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
+                                    $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
                                 } else {
                                     $key_options                    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
                                 }
