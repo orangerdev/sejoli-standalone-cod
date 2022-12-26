@@ -1014,31 +1014,54 @@ class COD {
                            
                             if( \in_array( $rate->service_code, $this->get_sicepat_services($product_id) ) ) {
                                 
+                                $price_w_markup = '';
                                 if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
-                                    $price = ($rate->price + $markup_fee) * $weight_cost; 
+                                    $price_w_markup = ($rate->price + $markup_fee) * $weight_cost;
+                                    $price = $rate->price * $weight_cost;
+
+                                    if($rate->service_code === 'SIUNT'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 1-2 Hari)';
+                                    }
+                                    elseif($rate->service_code === 'GOKIL'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 2-3 Hari)';
+                                    }
+                                    elseif($rate->service_code === 'BEST'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 1 Hari)';
+                                    }
+                                    else{
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                    }
                                 } else {
                                     $price = $rate->price * $weight_cost;
-                                }
 
-                                if($rate->service_code === 'SIUNT'){
-                                    $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
-                                    $key_title = 'SICEPAT '.$rate->service_code;
-                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
-                                }
-                                elseif($rate->service_code === 'GOKIL'){
-                                    $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
-                                    $key_title = 'SICEPAT '.$rate->service_code;
-                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
-                                }
-                                elseif($rate->service_code === 'BEST'){
-                                    $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
-                                    $key_title = 'SICEPAT '.$rate->service_code;
-                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
-                                }
-                                else{
-                                    $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
-                                    $key_title = 'SICEPAT '.$rate->service_code;
-                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                    if($rate->service_code === 'SIUNT'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                    }
+                                    elseif($rate->service_code === 'GOKIL'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
+                                    }
+                                    elseif($rate->service_code === 'BEST'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
+                                    }
+                                    else{
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                    }
                                 }
                                 
                                 if( false !== $is_cod_active && false !== $is_markup_cod_active ) {
