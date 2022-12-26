@@ -27,8 +27,8 @@ Class Tariff extends \Sejoli_Standalone_Cod\Database {
             Capsule::schema()->create( self::table(), function( $table ){
 
                 $table->increments ('ID');
-                $table->integer    ('sicepat_origin_id');
-                $table->integer    ('sicepat_destination_id');
+                $table->string     ('sicepat_origin_id');
+                $table->string     ('sicepat_destination_id');
                 $table->text       ('tariff_data');
                 $table->datetime   ('created_at');
                 $table->datetime   ('updated_at')->default(NULL)->nullable();

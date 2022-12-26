@@ -5,10 +5,9 @@ namespace Sejoli_Standalone_Cod\Shipment;
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 use \WeDevs\ORM\Eloquent\Facades\DB;
+use Sejoli_Standalone_Cod\API\ARVEOLI as API_ARVEOLI;
 use Sejoli_Standalone_Cod\Model\JNE\Tariff as JNE_Tariff;
-use Sejoli_Standalone_Cod\API\JNE as API_JNE;
 use Sejoli_Standalone_Cod\Model\SiCepat\Tariff as SICEPAT_Tariff;
-use Sejoli_Standalone_Cod\API\SiCepat as API_SICEPAT;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 class COD {
@@ -181,6 +180,132 @@ class COD {
     }
 
     /**
+     * Get origin detail
+     * @since   1.0.0
+     * @param   integer     $subdistrict_id     District ID
+     * @return  array|null  District detail
+     */
+    public function get_origin( $expedition, $city ) {
+
+        if( $city && $expedition === 'jne' ) :
+
+            ob_start();
+
+            require SEJOLI_STANDALONE_COD_DIR . 'json/json_origin_JNE.json';
+            $json_data = ob_get_contents();
+            
+            ob_end_clean();
+
+            $origins = json_decode( $json_data, true );
+            $current_origin = array();
+
+            foreach( $origins as $data ):
+                if( \str_contains( strtolower( $city ), strtolower( $data['originname'] ) ) !== false ) {
+                    $current_origin = $data;
+
+                    break;
+                } else {
+                    $current_origin = null;
+                }
+            endforeach;
+
+            return $current_origin;
+
+        endif;
+
+        if( $city && $expedition === 'sicepat' ) :
+
+            ob_start();
+
+            require SEJOLI_STANDALONE_COD_DIR . 'json/json_origin_sicepat.json';
+            $json_data = ob_get_contents();
+            
+            ob_end_clean();
+
+            $origins = json_decode( $json_data, true );
+            $current_origin = array();
+
+            foreach( $origins as $data ):
+                if( \str_contains( strtolower( $city ), strtolower( $data['origin_name'] ) ) !== false ) {
+                    $current_origin = $data;
+
+                    break;
+                } else {
+                    $current_origin = null;
+                }
+            endforeach;
+
+            return $current_origin;
+
+        endif;
+
+        return NULL;
+
+    }
+
+    /**
+     * Get destination detail
+     * @since   1.0.0
+     * @param   integer     $subdistrict_id     District ID
+     * @return  array|null  District detail
+     */
+    public function get_destination( $expedition, $district ) {
+
+        if( $district && $expedition === 'jne' ) :
+
+            ob_start();
+
+            require SEJOLI_STANDALONE_COD_DIR . 'json/json_dest_jne.json';
+            $json_data = ob_get_contents();
+            
+            ob_end_clean();
+
+            $destinations   = json_decode( $json_data, true );
+
+            foreach( $destinations as $data ):
+                if( \str_contains( strtolower( $district ), strtolower( $data['district_name'] ) ) !== false ) {
+                    $current_destination = $data;
+
+                    break;
+                } else {
+                    $current_destination = null;
+                }
+            endforeach;
+
+            return $current_destination;
+
+        endif;
+
+        if( $district && $expedition === 'sicepat' ) :
+
+            ob_start();
+
+            require SEJOLI_STANDALONE_COD_DIR . 'json/json_dest_sicepat.json';
+            $json_data = ob_get_contents();
+            
+            ob_end_clean();
+
+            $destinations   = json_decode( $json_data, true );
+
+            foreach( $destinations as $data ):
+                if( \str_contains( strtolower( $district ), strtolower( $data['subdistrict'] ) ) !== false ) {
+                    $current_destination = $data;
+
+                    break;
+                } else {
+                    $current_destination = null;
+                }
+            endforeach;
+
+            return $current_destination;
+
+        endif;
+
+        return NULL;
+
+    }
+
+    /**
      * Add COD shipping product fields
      * @since   1.0.0
      * @param   array   $fields   Current product fields
@@ -189,16 +314,16 @@ class COD {
     public function set_product_shipping_fields( $fields ) {
 
         $fields[] = array(
-            'title'     => __('Cash on Delivery (COD)', 'sejoli-standalone-cod'),
+            'title'     => __('Pengiriman (JNE & SiCepat)', 'sejoli-standalone-cod'),
             'fields'    => array(
-                Field::make( 'separator', 'sep_cod_services' , __('Cash on Delivery (COD)', 'sejoli-standalone-cod'))
+                Field::make( 'separator', 'sep_cod_services' , __('Pengiriman (JNE & SiCepat)', 'sejoli-standalone-cod'))
                     ->set_classes('sejoli-with-help')
                     ->set_help_text('<a href="' . sejolisa_get_admin_help('shipping') . '" class="thickbox sejoli-help">Tutorial <span class="dashicons dashicons-video-alt2"></span></a>'),
 
                 Field::make('html', 'html_info_sejoli_cod')
                     ->set_html('<div class="sejoli-html-message info"><p>'. __('Pengaturan ini hanya akan muncul jika tipe produk adalah produk fisik', 'sejoli') . '</p></div>'),
 
-                Field::make('checkbox', 'shipment_cod_services_active', __('Aktifkan COD', 'sejoli-standalone-cod'))
+                Field::make('checkbox', 'shipment_cod_services_active', __('Aktifkan Pengiriman', 'sejoli-standalone-cod'))
                     ->set_option_value('yes')
                     ->set_default_value(true)
                     ->set_conditional_logic(array(
@@ -208,7 +333,7 @@ class COD {
                         )
                     )),
 
-                Field::make('text', 'sejoli_scod_username', __('SCOD Username', 'sejoli-standalone-cod'))
+                Field::make('text', 'sejoli_scod_username', __('Username', 'sejoli-standalone-cod'))
                     ->set_required(true)
                     ->set_conditional_logic(array(
                         array(
@@ -221,7 +346,7 @@ class COD {
                         )
                     )),
 
-                Field::make('text', 'sejoli_scod_password', __('SCOD Password', 'sejoli-standalone-cod'))
+                Field::make('text', 'sejoli_scod_password', __('Password', 'sejoli-standalone-cod'))
                     ->set_required(true)
                     ->set_attribute('type', 'password')
                     ->set_conditional_logic(array(
@@ -235,7 +360,7 @@ class COD {
                         )
                     )),
 
-                Field::make('text', 'sejoli_scod_store_id', __('SCOD Store ID', 'sejoli-standalone-cod'))
+                Field::make('text', 'sejoli_scod_store_id', __('Store ID', 'sejoli-standalone-cod'))
                     ->set_required(true)
                     ->set_attribute('type', 'number')
                     ->set_conditional_logic(array(
@@ -249,7 +374,7 @@ class COD {
                         )
                     )),
 
-                Field::make('text', 'sejoli_scod_secret_key', __('SCOD Secret Key', 'sejoli-standalone-cod'))
+                Field::make('text', 'sejoli_scod_secret_key', __('Secret Key', 'sejoli-standalone-cod'))
                     ->set_required(true)
                     ->set_conditional_logic(array(
                         array(
@@ -327,8 +452,22 @@ class COD {
                             'value' => 'physical'
                         )))
                     ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
+
+                Field::make('text', 'sejoli_store_postal_code', __('Kode Pos', 'sejoli-standalone-cod'))
+                    ->set_attribute('type', 'number')
+                    ->set_required(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
+                        )
+                    )),
                 
-                Field::make('separator', 'sep_cod_services_setting', __('Pengaturan Layanan COD JNE', 'sejoli-standalone-cod'))->set_conditional_logic(array(
+                Field::make('separator', 'sep_cod_services_setting', __('Pengaturan Layanan Pengiriman JNE', 'sejoli-standalone-cod'))->set_conditional_logic(array(
                     array(
                         'field' => 'shipment_cod_services_active',
                         'value' => true
@@ -341,6 +480,7 @@ class COD {
 
                 Field::make( "multiselect", "shipment_cod_jne_services", __('Layanan JNE', 'sejoli-standalone-cod') )
                     ->add_options( array(
+                        'cod_jne_service_yes' => 'YES',
                         'cod_jne_service_reg' => 'REG',
                         'cod_jne_service_oke' => 'OKE',
                         'cod_jne_service_jtr' => 'JTR',
@@ -356,8 +496,9 @@ class COD {
                         )
                     )),
 
-                Field::make('text', 'shipment_cod_jne_markup_label', __('Label Biaya Markup COD JNE', 'sejoli-standalone-cod'))
-                    ->set_default_value(__('Biaya COD JNE', 'sejoli-standalone-cod'))
+                Field::make('checkbox', 'shipment_cod_jne_active', __('Aktifkan COD', 'sejoli-standalone-cod'))
+                    ->set_option_value('no')
+                    ->set_default_value(false)
                     ->set_conditional_logic(array(
                         array(
                             'field' => 'shipment_cod_services_active',
@@ -367,6 +508,24 @@ class COD {
                             'field' => 'product_type',
                             'value' => 'physical'
                         )
+                    )),
+
+                Field::make('text', 'shipment_cod_jne_markup_label', __('Label Biaya Markup COD JNE', 'sejoli-standalone-cod'))
+                    ->set_default_value(__('Biaya COD JNE', 'sejoli-standalone-cod'))
+                    ->set_required(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
+                        ),
+                        array(
+                            'field' => 'shipment_cod_jne_active',
+                            'value' => true
+                        ),
                     )),
 
                 Field::make('checkbox', 'shipment_cod_jne_markup_with_ongkir', __('Biaya COD JNE Termasuk ke Ongkir?', 'sejoli-standalone-cod'))
@@ -380,10 +539,14 @@ class COD {
                         array(
                             'field' => 'product_type',
                             'value' => 'physical'
-                        )
+                        ),
+                        array(
+                            'field' => 'shipment_cod_jne_active',
+                            'value' => true
+                        ),
                     )),
 
-                Field::make('separator', 'sep_cod_sicepat_setting', __('Pengaturan Layanan COD SiCepat', 'sejoli-standalone-cod'))->set_conditional_logic(array(
+                Field::make('separator', 'sep_cod_sicepat_setting', __('Pengaturan Layanan Pengiriman SiCepat', 'sejoli-standalone-cod'))->set_conditional_logic(array(
                     array(
                         'field' => 'shipment_cod_services_active',
                         'value' => true
@@ -396,7 +559,13 @@ class COD {
 
                 Field::make( "multiselect", "shipment_cod_sicepat_services", __('Layanan SiCepat', 'sejoli-standalone-cod') )
                     ->add_options( array(
+                        'cod_sicepat_service_cargo' => 'CARGO',
+                        'cod_sicepat_service_best'  => 'BEST',
                         'cod_sicepat_service_gokil' => 'GOKIL',
+                        'cod_sicepat_service_kepo'  => 'KEPO',
+                        'cod_sicepat_service_halu'  => 'HALU',
+                        'cod_sicepat_service_reg'   => 'REGULAR',
+                        'cod_sicepat_service_sds'   => 'SDS',
                         'cod_sicepat_service_siunt' => 'SI UNTUNG',
                     ))
                     ->set_conditional_logic(array(
@@ -410,27 +579,9 @@ class COD {
                         )
                     )),
 
-                // Field::make('text', 'shipment_cod_sicepat_weight', __('Berat barang (dalam gram)', 'sejoli-standalone-cod'))
-                //     ->set_attribute('type', 'number')
-                //     ->set_attribute('min', 1000)
-                //     ->set_conditional_logic(array(
-                //         array(
-                //             'field' => 'shipment_cod_services_active',
-                //             'value' => true
-                //         )
-                //     )),
-
-                // Field::make('select', 'shipment_cod_sicepat_origin', __('Awal pengiriman', 'sejoli-standalone-cod'))
-                //     ->set_options(array($this, 'get_subdistrict_options'))
-                //     ->set_conditional_logic(array(
-                //         array(
-                //             'field' => 'shipment_cod_services_active',
-                //             'value' => true
-                //         )))
-                //     ->set_help_text(__('Ketik nama kecamatan untuk pengiriman', 'sejoli-standalone-cod')),
-
-                Field::make('text', 'shipment_cod_sicepat_markup_label', __('Label Biaya Markup COD SiCepat', 'sejoli-standalone-cod'))
-                    ->set_default_value(__('Biaya COD SiCepat', 'sejoli-standalone-cod'))
+                Field::make('checkbox', 'shipment_cod_sicepat_active', __('Aktifkan COD', 'sejoli-standalone-cod'))
+                    ->set_option_value('no')
+                    ->set_default_value(false)
                     ->set_conditional_logic(array(
                         array(
                             'field' => 'shipment_cod_services_active',
@@ -440,6 +591,24 @@ class COD {
                             'field' => 'product_type',
                             'value' => 'physical'
                         )
+                    )),
+
+                Field::make('text', 'shipment_cod_sicepat_markup_label', __('Label Biaya Markup COD SiCepat', 'sejoli-standalone-cod'))
+                    ->set_default_value(__('Biaya COD SiCepat', 'sejoli-standalone-cod'))
+                    ->set_required(true)
+                    ->set_conditional_logic(array(
+                        array(
+                            'field' => 'shipment_cod_services_active',
+                            'value' => true
+                        ),
+                        array(
+                            'field' => 'product_type',
+                            'value' => 'physical'
+                        ),
+                        array(
+                            'field' => 'shipment_cod_sicepat_active',
+                            'value' => true
+                        ),
                     )),
 
                 Field::make('checkbox', 'shipment_cod_sicepat_markup_with_ongkir', __('Biaya COD SiCepat Termasuk ke Ongkir?', 'sejoli-standalone-cod'))
@@ -453,7 +622,11 @@ class COD {
                         array(
                             'field' => 'product_type',
                             'value' => 'physical'
-                        )
+                        ),
+                        array(
+                            'field' => 'shipment_cod_sicepat_active',
+                            'value' => true
+                        ),
                     )),
             )
         );
@@ -476,6 +649,10 @@ class COD {
         $jne_services = carbon_get_post_meta( $product_id, 'shipment_cod_jne_services' );
 
         foreach ( $jne_services as $jne_service ) {
+
+            if( $jne_service === 'cod_jne_service_yes' ) {
+                $services[] = 'YES19';
+            }
 
             if( $jne_service === 'cod_jne_service_reg' ) {
                 $services[] = 'REG19';
@@ -511,8 +688,32 @@ class COD {
 
         foreach ( $sicepat_services as $sicepat_service ) {
 
+            if( $sicepat_service === 'cod_sicepat_service_cargo' ) {
+                $services[] = 'CARGO';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_best' ) {
+                $services[] = 'BEST';
+            }
+
             if( $sicepat_service === 'cod_sicepat_service_gokil' ) {
                 $services[] = 'GOKIL';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_kepo' ) {
+                $services[] = 'KEPO';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_halu' ) {
+                $services[] = 'HALU';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_reg' ) {
+                $services[] = 'REGULAR';
+            }
+
+            if( $sicepat_service === 'cod_sicepat_service_sds' ) {
+                $services[] = 'SDS';
             }
 
             if( $sicepat_service === 'cod_sicepat_service_siunt' ) {
@@ -546,7 +747,7 @@ class COD {
     }
 
     /**
-     * Get tariff jne object
+     * Get tariff object
      *
      * @since   1.0.0
      *
@@ -555,29 +756,33 @@ class COD {
      *
      * @return  (Object|false)  returns an object on true, or false if fail
      */
-    private function get_tariff_info( $origin, $destination, $weight ) {
+    private function get_arveoli_tariff_info( $expedition, $origin, $destination, $weight ) {
 
-        $get_tariff = JNE_Tariff::where( 'jne_origin_id', $origin->ID )
-                        ->where( 'jne_destination_id', $destination->ID )
+        $get_tariff = JNE_Tariff::where( 'jne_origin_id', $origin )
+                        ->where( 'jne_destination_id', $destination )
                         ->first();
 
         if( ! $get_tariff ) {
-        
-            $req_tariff_data = API_JNE::set_params()->get_tariff( $origin->code, $destination->code, $weight );
-            // $req_tariff_data = API_JNE::set_params()->get_tariff( 'CGK10000', 'BDO10000', $weight );
+
+            $req_tariff_data = API_ARVEOLI::set_params()->get_tariff( $expedition, $origin, $destination, $weight );
+
             if( is_wp_error( $req_tariff_data ) ) {
+
                 return false;
+
             }
 
             $get_tariff                     = new JNE_Tariff();
-            $get_tariff->jne_origin_id      = $origin->ID;
-            $get_tariff->jne_destination_id = $destination->ID;
+            $get_tariff->jne_origin_id      = $origin;
+            $get_tariff->jne_destination_id = $destination;
             $get_tariff->tariff_data        = $req_tariff_data;
 
             if( ! $get_tariff->save() ) {
+
                 return false;
+
             }
-        
+
         }
 
         return $get_tariff;
@@ -594,23 +799,23 @@ class COD {
      *
      * @return  (Object|false)  returns an object on true, or false if fail
      */
-    private function get_sicepat_tariff_info( $origin, $destination ) {
+    private function get_sicepat_tariff_info( $expedition, $origin, $destination, $weight ) {
         
-        $get_tariff = SICEPAT_Tariff::where( 'sicepat_origin_id', $origin->ID )
-                        ->where( 'sicepat_destination_id', $destination->ID )
+        $get_tariff = SICEPAT_Tariff::where( 'sicepat_origin_id', $origin )
+                        ->where( 'sicepat_destination_id', $destination )
                         ->first();
 
         if( ! $get_tariff ) {
         
-            $req_tariff_data = API_SICEPAT::set_params()->get_tariff( $origin->origin_code, $destination->destination_code );
-            
+            $req_tariff_data = API_ARVEOLI::set_params()->get_tariff( $expedition, $origin, $destination, $weight );
+
             if( is_wp_error( $req_tariff_data ) ) {
                 return false;
             }
 
             $get_tariff                         = new SICEPAT_Tariff();
-            $get_tariff->sicepat_origin_id      = $origin->ID;
-            $get_tariff->sicepat_destination_id = $destination->ID;
+            $get_tariff->sicepat_origin_id      = $origin;
+            $get_tariff->sicepat_destination_id = $destination;
             $get_tariff->tariff_data            = $req_tariff_data;
 
             if( ! $get_tariff->save() ) {
@@ -634,66 +839,52 @@ class COD {
 
         $product_id    = intval( $post_data['product_id'] );
         $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
+        $is_markup_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_active' ) );
         $markup_ongkir = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_markup_with_ongkir' ) );
         $product       = sejolisa_get_product( $product_id );
 
         if( false !== $is_cod_active && $product->type === "physical" ) :
 
             $cod_origin      = carbon_get_post_meta( $product_id, 'shipment_cod_origin');
-            $cod_origin_city = $this->get_subdistrict_detail( $cod_origin );
-            
-            $getOriginCode = DB::table( 'sejolisa_shipping_jne_origin' )
-                    ->where( 'city_id', $cod_origin_city['city_id'] )
-                    ->get();        
+            $cod_origin_city = $this->get_subdistrict_detail( $cod_origin );   
+            $getOriginCode   = $this->get_origin( $expedition = 'jne', $cod_origin_city['city'] );
 
             if( ! $getOriginCode ) {
                 return false;
             }
 
-            $origin = $getOriginCode[0];
+            $origin = $getOriginCode['origincode'];   
 
             if( ! $origin ) {
                 return false;
             }
 
             $cod_destination_city = $this->get_subdistrict_detail( $post_data['district_id'] );
-
-            $getDestCode = DB::table( 'sejolisa_shipping_jne_destination' )
-                    ->where( 'city_id', $cod_destination_city['city_id'] )
-                    ->where( 'district_id', $cod_destination_city['subdistrict_id'] )
-                    ->get();        
+            $getDestCode          = $this->get_destination( $expedition = 'jne', $cod_destination_city['subdistrict_name'] );
 
             if( ! $getDestCode ) {
                 return false;
             }
 
-            $destination = $getDestCode[0];
+            $destination = $getDestCode['tariff_code'];
 
             if( ! $destination ) {
                 return false;
             }
 
-            // $is_cod_locally = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_cover' ) );
             $add_options       = true;
             $fee_title         = '';
             $product           = sejolisa_get_product( $post_data['product_id'] );
             $product_weight    = intval( $product->shipping['weight'] );
             $weight_cost       = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
             $weight_cost       = ( 0 === $weight_cost ) ? 1 : $weight_cost;
-            $tariff            = $this->get_tariff_info( $origin, $destination, $weight_cost );
+            $tariff            = $this->get_arveoli_tariff_info( $expedition = 'jne', $origin, $destination, $weight_cost );
             $cart_detail       = apply_filters( 'sejoli/order/cart-detail', [], $post_data );
             $markup_percentage = 0.04;
             $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : 0;
             $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : 0;
             $get_product_total = isset( $variant_price ) ? $product->price + $variant_price : $product->price;
             $markup_fee        = $get_product_total * $markup_percentage;
-            // if( true === $is_cod_locally ) :
-                
-            //     $city_cover  = carbon_get_post_meta( $product_id, 'shipment_cod_jne_city');
-            //     $district_id = intval( $post_data['district_id'] );
-            //     $add_options = $this->check_if_subdistrict_in_cities( $district_id, $city_cover );
-            
-            // endif;
 
             if( true === $add_options ) :
 
@@ -701,35 +892,66 @@ class COD {
                     return false;
                 }
 
-                if( is_array( $tariff->tariff_data ) && count( $tariff->tariff_data ) > 0 ) {
-
-                    foreach ( $tariff->tariff_data as $rate ) {
-
+                if( $tariff ) {
+                    foreach ( $tariff->tariff_data->data as $key => $rate ) {
                         if( \in_array( $rate->service_code, $this->get_jne_services($product_id) ) ) {
-                            
-                            if( false !== $markup_ongkir ) {
-                                $price = ($rate->price + $markup_fee) * $weight_cost; 
+
+                            $price_w_markup = '';
+                            if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
+                                $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
+                                $price = $rate->price * $weight_cost;
+
+                                if($rate->service_name === 'OKE'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
+                                }
+                                elseif($rate->service_name === 'REG'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                }
+                                elseif($rate->service_name === 'YES'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Yakin Esok Sampai)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
+                                }
+                                else{
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Pengiriman Truk)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 3-4 Hari)';
+                                }
                             } else {
                                 $price = $rate->price * $weight_cost;
-                            }
 
-                            if($rate->service_display === 'OKE'){
-                                $cod_title = 'JNE '.$rate->service_display. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_display;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 2-3 Hari)';
-                            }
-                            elseif($rate->service_display === 'REG'){
-                                $cod_title = 'JNE '.$rate->service_display. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_display;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 1-2 Hari)';
-                            }
-                            else{
-                                $cod_title = 'JNE '.$rate->service_display. __(' (Layanan Pengiriman Truk)', 'sejoli-standalone-cod');
-                                $key_title = 'JNE '.$rate->service_display;
-                                $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 3-4 Hari)';
+                                if($rate->service_name === 'OKE'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Ongkos Kirim Ekonomis)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
+                                }
+                                elseif($rate->service_name === 'REG'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                }
+                                elseif($rate->service_name === 'YES'){
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Yakin Esok Sampai)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
+                                }
+                                else{
+                                    $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Pengiriman Truk)', 'sejoli-standalone-cod');
+                                    $key_title = 'JNE '.$rate->service_name;
+                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 3-4 Hari)';
+                                }
                             }
                             
-                            $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
+                            if( false !== $is_cod_active && false !== $is_markup_cod_active ) {
+                                $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
+                                $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
+                            } else {
+                                $key_options                    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
+                            }
                             $shipping_options[$key_options] = $cod_title . $fee_title;
 
                         }
@@ -755,67 +977,52 @@ class COD {
 
         $product_id    = intval( $post_data['product_id'] );
         $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
+        $is_markup_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_active' ) );
         $markup_ongkir = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_markup_with_ongkir' ) );
         $product       = sejolisa_get_product( $product_id );
 
         if( false !== $is_cod_active && $product->type === "physical" ) :
 
-            $cod_origin      = carbon_get_post_meta( $product_id, 'shipment_cod_origin' );
-            $cod_origin_city = $this->get_subdistrict_detail( $cod_origin );
-
-            $getOriginCode = DB::table( 'sejolisa_shipping_sicepat_origin' )
-                    ->where( 'city_id', $cod_origin_city['city_id'] )
-                    ->get();     
+            $cod_origin      = carbon_get_post_meta( $product_id, 'shipment_cod_origin');
+            $cod_origin_city = $this->get_subdistrict_detail( $cod_origin );   
+            $getOriginCode   = $this->get_origin( $expedition = 'sicepat', $cod_origin_city['city'] );
 
             if( ! $getOriginCode ) {
                 return false;
             }
 
-            $origin = $getOriginCode[0];
+            $origin = $getOriginCode['origin_code'];   
 
             if( ! $origin ) {
                 return false;
             }
 
             $cod_destination_city = $this->get_subdistrict_detail( $post_data['district_id'] );
-
-            $getDestCode = DB::table( 'sejolisa_shipping_sicepat_destination' )
-                    ->where( 'city_id', $cod_destination_city['city_id'] )
-                    ->where( 'district_id', $cod_destination_city['subdistrict_id'] )
-                    ->get();        
+            $getDestCode          = $this->get_destination( $expedition = 'sicepat', $cod_destination_city['subdistrict_name'] );
 
             if( ! $getDestCode ) {
                 return false;
             }
 
-            $destination = $getDestCode[0];
+            $destination = $getDestCode['destination_code'];
 
             if( ! $destination ) {
                 return false;
             }
 
-            // $is_cod_locally = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_cover' ) );
             $add_options       = true;
             $fee_title         = '';
             $product           = sejolisa_get_product( $post_data['product_id'] );
             $product_weight    = intval( $product->shipping['weight'] );
             $weight_cost       = (int) round( ( intval( $post_data['quantity'] ) * $product_weight ) / 1000 );
             $weight_cost       = ( 0 === $weight_cost ) ? 1 : $weight_cost;
-            $tariff            = $this->get_sicepat_tariff_info( $origin, $destination, $weight_cost );
+            $tariff            = $this->get_sicepat_tariff_info( $expedition = 'sicepat', $origin, $destination, $weight_cost );
             $cart_detail       = apply_filters( 'sejoli/order/cart-detail', [], $post_data );
             $markup_percentage = 0.08;
             $shipment_fee      = isset( $cart_detail['shipment_fee'] ) ? $cart_detail['shipment_fee'] : 0;
             $variant_price     = isset( $cart_detail['variant-ukuran']['raw_price'] ) ? $cart_detail['variant-ukuran']['raw_price'] : 0;
             $get_product_total = isset( $variant_price ) ? $product->price + $variant_price : $product->price;
             $markup_fee        = $get_product_total * $markup_percentage;
-
-            // if( true === $is_cod_locally ) :
-                
-            //     $city_cover  = carbon_get_post_meta( $product_id, 'shipment_cod_jne_city');
-            //     $district_id = intval( $post_data['district_id'] );
-            //     $add_options = $this->check_if_subdistrict_in_cities( $district_id, $city_cover );
-            
-            // endif;
 
             if( true === $add_options ) :
 
@@ -825,30 +1032,68 @@ class COD {
 
                 if($get_product_total >= 5000 && $get_product_total <= 15000000) :
 
-                    if( is_array( $tariff->tariff_data ) && count( $tariff->tariff_data ) > 0 ) {
+                    if( $tariff ) {
 
-                        foreach ( $tariff->tariff_data as $rate ) {
+                        foreach ( $tariff->tariff_data->data as $key => $rate ) {
                            
-                            if( \in_array( $rate->service, $this->get_sicepat_services($product_id) ) ) {
+                            if( \in_array( $rate->service_code, $this->get_sicepat_services($product_id) ) ) {
                                 
-                                if( false !== $markup_ongkir ) {
-                                    $price = ($rate->tariff + $markup_fee) * $weight_cost; 
-                                } else {
-                                    $price = $rate->tariff * $weight_cost;
-                                }
+                                $price_w_markup = '';
+                                if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
+                                    $price_w_markup = ($rate->price + $markup_fee) * $weight_cost;
+                                    $price = $rate->price * $weight_cost;
 
-                                if($rate->service === 'SIUNT'){
-                                    $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
-                                    $key_title = 'SICEPAT '.$rate->service;
-                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 1-2 Hari)';
-                                }
-                                elseif($rate->service === 'GOKIL'){
-                                    $cod_title = 'SICEPAT '.$rate->service.' (' .$rate->description.')';
-                                    $key_title = 'SICEPAT '.$rate->service;
-                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (COD - estimasi 2-3 Hari)';
+                                    if($rate->service_code === 'SIUNT'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 1-2 Hari)';
+                                    }
+                                    elseif($rate->service_code === 'GOKIL'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 2-3 Hari)';
+                                    }
+                                    elseif($rate->service_code === 'BEST'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 1 Hari)';
+                                    }
+                                    else{
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                    }
+                                } else {
+                                    $price = $rate->price * $weight_cost;
+
+                                    if($rate->service_code === 'SIUNT'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                    }
+                                    elseif($rate->service_code === 'GOKIL'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
+                                    }
+                                    elseif($rate->service_code === 'BEST'){
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
+                                    }
+                                    else{
+                                        $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
+                                        $key_title = 'SICEPAT '.$rate->service_code;
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                    }
                                 }
                                 
-                                $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
+                                if( false !== $is_cod_active && false !== $is_markup_cod_active ) {
+                                    $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
+                                    $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
+                                } else {
+                                    $key_options                    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
+                                }
                                 $shipping_options[$key_options] = $cod_title . $fee_title;
 
                             }

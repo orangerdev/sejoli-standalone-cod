@@ -28,25 +28,52 @@
 	 * Although scripts in the WordPress core, Plugins and Themes may be
 	 * practising this, we should strive to set a better example in our own work.
 	 */
+	
+	$(window).load(function() {
+
+        setTimeout(() => {
+            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').addClass('hide');
+        }, 2000)
+
+    });
 
 	$(document).ready(function($){
 	    
 	    $('body').on( 'change', 'select#shipping_method', function(e){
 	        e.preventDefault();
 
-	        $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
-	        $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', true);
+	        // $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
+	        // $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', true);
 
 	        var s = $(this).val();
-	        if (s.match(/COD.*/)) {
-	            $('input[name="payment_gateway"]').closest('.eight').addClass('hide');
+
+	        // if (s.match(/YES.*/) || s.match(/BEST.*/) || s.match(/REGULAR.*/) || s.match(/CARGO.*/) || s.match(/KEPO.*/) || s.match(/HALU.*/) || s.match(/SDS.*/)) {
+	        if (s.match(/REG.*/) || s.match(/SIUNT.*/)) {
+	            // $('input[name="payment_gateway"]').closest('.eight').addClass('hide');
+	            // $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
+	            // $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', true);
+	        	
+	        	// $('input[name="payment_gateway"]').closest('.eight').removeClass('hide');
 	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
-	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', true);
+	            // $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', false);
+	            // $('.eight:nth-child(1) .ui input[name="payment_gateway"]').prop('checked', true);
 	        } else {
-	        	$('input[name="payment_gateway"]').closest('.eight').removeClass('hide');
 	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').addClass('hide');
-	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', false);
 	            $('.eight:nth-child(1) .ui input[name="payment_gateway"]').prop('checked', true);
+	        }
+
+	        if (s.match(/NONCOD.*/) || s.match(/YES.*/) || s.match(/OKE.*/) || s.match(/JTR.*/) || s.match(/BEST.*/) || s.match(/REGULAR.*/) || s.match(/CARGO.*/) || s.match(/KEPO.*/) || s.match(/HALU.*/) || s.match(/SDS.*/) || s.match(/GOKIL.*/)) {
+	            // $('input[name="payment_gateway"]').closest('.eight').addClass('hide');
+	            // $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
+	            // $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', true);
+	        	
+	        	// $('input[name="payment_gateway"]').closest('.eight').removeClass('hide');
+	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').addClass('hide');
+	            $('.eight:nth-child(1) .ui input[name="payment_gateway"]').prop('checked', true);
+	            // $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').prop('checked', false);
+	            // $('.eight:nth-child(1) .ui input[name="payment_gateway"]').prop('checked', true);
+	        } else {
+	            $('input[name="payment_gateway"][value="cod:::CashOnDelivery"]').closest('.eight').removeClass('hide');
 	        }
 	    });
 
@@ -62,16 +89,15 @@
                 url : baseURL,
                 type : 'POST',
                 data : {
+                    shipmentExpedition: $('#shipment-expedition').val(),
                     shipmentNumber: $('#shipment-number').val(),
                     nonce:  nonce
                 },
                 success : function(response) {
-                    console.log(response);
                     $('#shipment-history').html(response);
-                    // window.location.reload();
                 },
                 error: function (request, status, error) {
-                    console.log(request);
+                    // console.log(request);
                     console.log(error);
                 }
             });

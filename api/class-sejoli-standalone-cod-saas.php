@@ -1,7 +1,6 @@
 <?php
 namespace Sejoli_Standalone_Cod\API;
 
-// use Sejoli_Standalone_Cod\Shipping_Method;
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -319,44 +318,51 @@ class SCOD {
 			$this->method 	= 'POST';
 
 			$body_params = wp_parse_args( $params, array(
-				'store_id'		  => NULL,
-				'secret_key'	  => NULL,
-				'buyer_name'	  => NULL,
-				'buyer_email'	  => NULL,
-				'buyer_phone'	  => NULL,
-				'courier_name'	  => NULL,
-				'invoice_number'  => NULL,
-				'shipper_name'    => NULL,
-		        'shipper_addr1'   => NULL,
-		        'shipper_addr2'   => NULL,
-		        'shipper_city'    => NULL,
-		        'shipper_region'  => NULL,
-		        'shipper_zip'     => NULL,
-		        'shipper_phone'   => NULL,
-		        'receiver_name'   => NULL,
-		        'receiver_addr1'  => NULL,
-		        'receiver_addr2'  => NULL,
-		        'receiver_city'   => NULL,
-		        'receiver_region' => NULL,
-		        'receiver_zip'    => NULL,
-		        'receiver_phone'  => NULL,
-		        'qty'             => NULL,
-		        'weight'          => NULL,
-		        'goods_desc'      => NULL,
-		        'goods_value'     => NULL,
-		        'goods_type'      => NULL,
-		        'insurance'       => NULL,
-		        'origin'          => NULL,
-		        'destination'     => NULL,
-		        'service'         => NULL,
-		        'codflag'         => NULL,
-		        'codamount'       => NULL,
-				'invoice_total'   => NULL,
-				'shipping_fee'	  => NULL,
-				'shipping_number' => NULL,
-				'shipping_status' => NULL,
-				'notes'			  => NULL,
-				'order'			  => NULL
+				'store_id'		       => NULL,
+				'secret_key'	       => NULL,
+				'buyer_name'	       => NULL,
+				'buyer_email'	       => NULL,
+				'buyer_phone'	       => NULL,
+				'courier_name'	       => NULL,
+				'invoice_number'       => NULL,
+				'shipper_name'         => NULL,
+		        'shipper_address'      => NULL,
+		        'shipper_province'     => NULL,
+		        'shipper_city'         => NULL,
+		        'shipper_district'     => NULL,
+		        'shipper_subdistrict'  => NULL,
+		        'shipper_zip'          => NULL,
+		        'shipper_phone'        => NULL,
+		        'shipper_email'        => NULL,
+		        'receiver_name'        => NULL,
+		        'receiver_address'     => NULL,
+		        'receiver_province'    => NULL,
+		        'receiver_city'        => NULL,
+		        'receiver_district'    => NULL,
+		        'receiver_subdistrict' => NULL,
+		        'receiver_zip'         => NULL,
+		        'receiver_phone'       => NULL,
+		        'receiver_email'       => NULL,
+		        'qty'                  => NULL,
+		        'weight'               => NULL,
+		        'goods_desc'           => NULL,
+		        'goods_category'       => NULL,
+		        'goods_value'          => NULL,
+		        'goods_type'           => NULL,
+		        'insurance'            => NULL,
+		        'expedition'           => NULL,
+		        'origin'               => NULL,
+		        'destination'          => NULL,
+		        'branch'          	   => NULL,
+		        'service'              => NULL,
+		        'codflag'              => NULL,
+		        'codamount'            => 0.0,
+		        'invoice_total'        => 0.0,
+		        'shipping_fee'         => 0.0,
+		        'cod_fee'              => 0.0,
+				'shipping_status' 	   => NULL,
+				'notes'			       => NULL,
+				'order'			       => NULL
 			));
 
 			if( \is_null( $body_params['store_id'] ) || \is_null( $body_params['secret_key'] ) ) {
@@ -392,6 +398,7 @@ class SCOD {
 				}
 
 					$this->set_token( $token );
+					
 				}
 			}
 
@@ -439,17 +446,22 @@ class SCOD {
      *
      * @return 	(array|WP_Error) The response array or a WP_Error on failure
      */
-	public function post_update_order( $order_id, $status, $shipNumber ) {
-		
+	public function post_update_order( $params ) {
+
 		error_log( 'Updating order data ..' );
 		
 		try {
 
-			$this->endpoint = 'wp-json/scod/v1/orders/update/' . $order_id. '/' .$status. '/' .$shipNumber;
-			$this->method 	= 'PUT';
-			$this->body		= NULL;
+			$this->endpoint = 'wp-json/scod/v1/orders/update';
+			$this->method 	= 'POST';
+			$body_params = wp_parse_args( $params, array(
+				'invoice_number'  => NULL,
+	            'shipping_status' => NULL,
+	            'shipping_number' => NULL
+			));
 
-			$get_response 	= $this->do_request();
+			$set_body 	  = $this->set_body_params( $body_params );
+			$get_response = $this->do_request();
 
 			if ( ! is_wp_error( $get_response ) ) :
 
