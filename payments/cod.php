@@ -82,7 +82,7 @@ final class SejoliCOD extends \SejoliSA\Payment {
 
         $url           = $_SERVER['HTTP_REFERER'];
         $product_id    = url_to_postid( $url );
-        $is_cod_active = carbon_get_post_meta( $product_id, 'shipment_cod_services_active' );
+        $is_cod_active = boolval(carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ));
         $is_markup_cod_jne_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_active' ) );
         $is_markup_cod_sicepat_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_active' ) );
         $product       = sejolisa_get_product( $product_id );

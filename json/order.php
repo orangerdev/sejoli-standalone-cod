@@ -837,6 +837,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 'order'                => $order
             );
 
+
             // Send data to API
             $api_scod     = new API_SCOD();
             $create_order = $api_scod->post_create_order( $order_params );

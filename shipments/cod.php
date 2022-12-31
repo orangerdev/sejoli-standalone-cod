@@ -909,7 +909,7 @@ class COD {
                                 elseif($rate->service_name === 'REG'){
                                     $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Reguler)', 'sejoli-standalone-cod');
                                     $key_title = 'JNE '.$rate->service_name;
-                                    $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
+                                    $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 1-2 Hari)';
                                 }
                                 elseif($rate->service_name === 'YES'){
                                     $cod_title = 'JNE '.$rate->service_name. __(' (Layanan Yakin Esok Sampai)', 'sejoli-standalone-cod');
@@ -946,9 +946,11 @@ class COD {
                                 }
                             }
                             
-                            if( false !== $is_cod_active && false !== $is_markup_cod_active ) {
+                            if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
                                 $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
                                 $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
+                            } else if(true !== $markup_ongkir && false !== $is_markup_cod_active) {
+                                $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
                             } else {
                                 $key_options                    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
                             }
@@ -1048,15 +1050,16 @@ class COD {
                                         $key_title = 'SICEPAT '.$rate->service_code;
                                         $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 1-2 Hari)';
                                     }
+                                    
                                     elseif($rate->service_code === 'GOKIL'){
                                         $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
                                         $key_title = 'SICEPAT '.$rate->service_code;
-                                        $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 2-3 Hari)';
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 2-3 Hari)';
                                     }
                                     elseif($rate->service_code === 'BEST'){
                                         $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
                                         $key_title = 'SICEPAT '.$rate->service_code;
-                                        $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 1 Hari)';
+                                        $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1 Hari)';
                                     }
                                     else{
                                         $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
@@ -1087,10 +1090,12 @@ class COD {
                                         $fee_title = ' - ' . sejolisa_price_format($price). ', (estimasi 1-2 Hari)';
                                     }
                                 }
-                                
-                                if( false !== $is_cod_active && false !== $is_markup_cod_active ) {
+
+                                if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
                                     $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
                                     $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
+                                } else if(true !== $markup_ongkir && false !== $is_markup_cod_active) {
+                                    $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
                                 } else {
                                     $key_options                    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
                                 }
