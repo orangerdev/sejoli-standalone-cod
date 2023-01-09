@@ -586,7 +586,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     }
                 endif;
 
-                $tracking_pod_status_sicepat = ( isset($trace_tracking_arveoli_sicepat->sicepat->result->last_status->status) ? $trace_tracking_arveoli_sicepat->sicepat->result->last_status->status : false );
+                $tracking_pod_status_sicepat = ( isset($trace_tracking_arveoli_sicepat->last_status->status) ? $trace_tracking_arveoli_sicepat->last_status->status : false );
                 if(false !== $tracking_pod_status_sicepat) :
                     if( $tracking_pod_status_sicepat === "DELIVERED" ){
                         // Process updating order status
