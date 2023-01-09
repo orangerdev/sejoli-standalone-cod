@@ -244,6 +244,8 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 'codflag'             => NULL,
                 'codAmount'           => NULL,
                 'shippingPrice'       => NULL,
+                'member_id'           => NULL,
+                'member_name'         => NULL,
                 'nonce'               => NULL
             ));
 
@@ -259,15 +261,19 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 $shipping_name   = $order['meta_data']['shipping_data']['service'];
 
                 if (strpos( $checkCourierService, 'JNE' ) !== false) :
-                   
+
                     if($shipping_name === "JNE REG") {
-                        $shipping_service = "REG";
+                        $shipping_service = "REG19";
                     } elseif($shipping_name === "JNE OKE") {
-                        $shipping_service = "OKE";
+                        $shipping_service = "OKE19";
                     } elseif($shipping_name === "JNE YES") {
-                        $shipping_service = "YES";
+                        $shipping_service = "YES19";
+                    } elseif($shipping_name === "JNE JTR>250") {
+                        $shipping_service = "JTR>250";
+                    } elseif($shipping_name === "JNE JTR<150") {
+                        $shipping_service = "JTR<150";
                     } else {
-                        $shipping_service = "JTR";
+                        $shipping_service = "JTR18";
                     }
                     
                     $receiver_destination_id   = $order['meta_data']['shipping_data']['district_id'];
@@ -317,7 +323,7 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     } elseif($shipping_name === "SICEPAT HALU") {
                         $shipping_service = "HALU";
                     } elseif($shipping_name === "SICEPAT SDS") {
-                        $shipping_service = "SDS";
+                        $shipping_service = "SDS";    
                     } else {
                         $shipping_service = "REGULAR";
                     }
@@ -390,7 +396,10 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 } else {
                     $codflag = "0";
                 }
-                $note            = 'Mohon Segera Diproses...';
+                $note        = 'Mohon Segera Diproses...';
+
+                $member_id   = $params['invoice_number'];
+                $member_name = $order['meta_data']['shipping_data']['receiver'];
 
                 $params['orderID']             = $params['invoice_number'];
                 $params['orderDate']           = $order['created_at'];
@@ -434,6 +443,8 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                     $params['codAmount']       = 0;
                 }
                 $params['shippingPrice']       = $shipping_fee;
+                $params['member_id']           = $member_id;
+                $params['member_name']         = $member_name;
      
             endif;
 
@@ -450,10 +461,13 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
 
                 if ( ! is_wp_error( $do_update ) ) {
 
-                    $respond['valid']  = true;
-                    $number_resi = $do_update->no_resi;
+                    if( true !== $do_update->status ) {
+                        return false;
+                    }
 
-                    $status = "on-the-way";
+                    $number_resi      = $do_update->data->no_resi;
+                    $respond['valid'] = true;
+                    $status           = "on-the-way";
 
                     $order_params = array(
                         'invoice_number'  => $params['orderID'],
@@ -535,9 +549,9 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
                 $meta_data              = unserialize($result->meta_data);
                 $shipping_number        = (isset($meta_data['shipping_data']['resi_number'])) ? $meta_data['shipping_data']['resi_number'] : '';
                 
-                $trace_tracking_arveoli_jne = API_ARVEOLI::set_params()->get_tracking( 'jne', $shipping_number );
+                $trace_tracking_arveoli_jne = API_ARVEOLI::set_params()->get_tracking( $shipping_number );
 
-                $trace_tracking_arveoli_sicepat = API_ARVEOLI::set_params()->get_tracking( 'sicepat', $shipping_number );
+                $trace_tracking_arveoli_sicepat = API_ARVEOLI::set_params()->get_tracking( $shipping_number );
 
                 $tracking_pod_status_jne = ( isset($trace_tracking_arveoli_jne->cnote->pod_status) ? $trace_tracking_arveoli_jne->cnote->pod_status : false );
                 if( false !== $tracking_pod_status_jne ) :
@@ -643,15 +657,20 @@ Class Order extends \Sejoli_Standalone_Cod\JSON {
             if( \str_contains( strtolower( $shipping_name ), 'jne' ) ):
 
                 $courier_name = 'jne';
+
                 if($shipping_name === "JNE REG") {
-                    $shipping_service = "REG";
+                    $shipping_service = "REG19";
                 } elseif($shipping_name === "JNE OKE") {
-                    $shipping_service = "OKE";
+                    $shipping_service = "OKE19";
                 } elseif($shipping_name === "JNE YES") {
-                    $shipping_service = "YES";
+                    $shipping_service = "YES19";
+                } elseif($shipping_name === "JNE JTR>250") {
+                    $shipping_service = "JTR>250";
+                } elseif($shipping_name === "JNE JTR<150") {
+                    $shipping_service = "JTR<150";
                 } else {
-                    $shipping_service = "JTR";
-                }  
+                    $shipping_service = "JTR18";
+                }
 
                 $getDestCode = $this->get_destination( $expedition = 'jne', $receiver_destination_city['subdistrict_name'] );    
 

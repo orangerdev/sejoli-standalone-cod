@@ -837,11 +837,11 @@ class COD {
      */
     public function set_shipping_jne_options( $shipping_options, array $post_data ) {
 
-        $product_id    = intval( $post_data['product_id'] );
-        $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
+        $product_id           = intval( $post_data['product_id'] );
+        $is_cod_active        = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
         $is_markup_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_active' ) );
-        $markup_ongkir = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_markup_with_ongkir' ) );
-        $product       = sejolisa_get_product( $product_id );
+        $markup_ongkir        = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_jne_markup_with_ongkir' ) );
+        $product              = sejolisa_get_product( $product_id );
 
         if( false !== $is_cod_active && $product->type === "physical" ) :
 
@@ -948,11 +948,11 @@ class COD {
                             
                             if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
                                 $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
-                                $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
+                                $key_options    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
                             } else if(true !== $markup_ongkir && false !== $is_markup_cod_active) {
-                                $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
+                                $key_options    = 'COD:::'.$key_title.':::' . sanitize_title($price);
                             } else {
-                                $key_options                    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
+                                $key_options    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
                             }
                             $shipping_options[$key_options] = $cod_title . $fee_title;
 
@@ -977,11 +977,11 @@ class COD {
      */
     public function set_shipping_sicepat_options( $shipping_options, array $post_data ) {
 
-        $product_id    = intval( $post_data['product_id'] );
-        $is_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
+        $product_id           = intval( $post_data['product_id'] );
+        $is_cod_active        = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_services_active' ) );
         $is_markup_cod_active = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_active' ) );
-        $markup_ongkir = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_markup_with_ongkir' ) );
-        $product       = sejolisa_get_product( $product_id );
+        $markup_ongkir        = boolval( carbon_get_post_meta( $product_id, 'shipment_cod_sicepat_markup_with_ongkir' ) );
+        $product              = sejolisa_get_product( $product_id );
 
         if( false !== $is_cod_active && $product->type === "physical" ) :
 
@@ -1050,7 +1050,6 @@ class COD {
                                         $key_title = 'SICEPAT '.$rate->service_code;
                                         $fee_title = ' - ' . sejolisa_price_format($price_w_markup). ', (estimasi 1-2 Hari)';
                                     }
-                                    
                                     elseif($rate->service_code === 'GOKIL'){
                                         $cod_title = 'SICEPAT '.$rate->service_code.' (' .$rate->service_name.')';
                                         $key_title = 'SICEPAT '.$rate->service_code;
@@ -1093,11 +1092,11 @@ class COD {
 
                                 if( false !== $markup_ongkir && false !== $is_markup_cod_active ) {
                                     $price_w_markup = ($rate->price + $markup_fee) * $weight_cost; 
-                                    $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
+                                    $key_options    = 'COD:::'.$key_title.':::' . sanitize_title($price_w_markup);
                                 } else if(true !== $markup_ongkir && false !== $is_markup_cod_active) {
-                                    $key_options                    = 'COD:::'.$key_title.':::' . sanitize_title($price);
+                                    $key_options    = 'COD:::'.$key_title.':::' . sanitize_title($price);
                                 } else {
-                                    $key_options                    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
+                                    $key_options    = 'NONCOD:::'.$key_title.':::' . sanitize_title($price);
                                 }
                                 $shipping_options[$key_options] = $cod_title . $fee_title;
 

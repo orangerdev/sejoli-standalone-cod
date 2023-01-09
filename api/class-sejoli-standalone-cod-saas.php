@@ -314,9 +314,6 @@ class SCOD {
 	
 		try {
 
-			$this->endpoint = 'wp-json/scod/v1/orders';
-			$this->method 	= 'POST';
-
 			$body_params = wp_parse_args( $params, array(
 				'store_id'		       => NULL,
 				'secret_key'	       => NULL,
@@ -374,33 +371,33 @@ class SCOD {
 			$product_id = $order_data['product_id'];
 
 			//Always validate token first before doing request
-			if( $token = $this->get_token() ) {
-				// Validate token if set
-				if( $token ) {
-					$validate_token = $this->validate_token( $token );
-	
-					// Get new token
-					if( ! $validate_token ) {
-						
-						// Get order shipping instance
-						$order = $body_params['order'];
-						$username = carbon_get_post_meta($product_id, 'sejoli_scod_username');
-						$password = carbon_get_post_meta($product_id, 'sejoli_scod_password');
-	
-						if( $username && $password ) {
-							$token = $this->get_new_token( $username, $password );
 
-							if( is_wp_error( $token ) ) {
-								return new \WP_Error( 'invalid_token', 'Token is invalid.' );
-							}
-						}
+			$token = $this->get_token();
 
+			$validate_token = $this->validate_token( $token );
+	
+			// Get new token
+			if( ! $validate_token ) {
+				
+				// Get order shipping instance
+				$order = $body_params['order'];
+				$username = carbon_get_post_meta($product_id, 'sejoli_scod_username');
+				$password = carbon_get_post_meta($product_id, 'sejoli_scod_password');
+
+				if( $username && $password ) {
+					$token = $this->get_new_token( $username, $password );
+
+					if( is_wp_error( $token ) ) {
+						return new \WP_Error( 'invalid_token', 'Token is invalid.' );
 					}
-
-					$this->set_token( $token );
-					
 				}
+
 			}
+
+			$this->set_token( $token );
+
+			$this->endpoint = 'wp-json/scod/v1/orders';
+			$this->method 	= 'POST';
 
 			unset( $body_params['order'] );
 			$set_body 	  = $this->set_body_params( $body_params );

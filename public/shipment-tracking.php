@@ -72,21 +72,21 @@ class ShipmentTracking {
             'message' => NULL
         ];
 
-        if( wp_verify_nonce( $params['nonce'], 'sejoli_shipment_tracking_result') && !empty($params['shipmentExpedition']) && !empty($params['shipmentNumber']) ) :
+        if( wp_verify_nonce( $params['nonce'], 'sejoli_shipment_tracking_result' ) && !empty($params['shipmentNumber']) ) :
 
             unset( $params['nonce'] );
              
-            $trace_tracking_arveoli = API_ARVEOLI::set_params()->get_tracking( $params['shipmentExpedition'], $params['shipmentNumber'] );
+            $trace_tracking_arveoli = API_ARVEOLI::set_params()->get_tracking( $params['shipmentNumber'] );
 
             if ( ! is_wp_error( $trace_tracking_arveoli ) ) {
 
                 $respond['valid']  = true;
 
-               if( isset( $trace_tracking_arveoli->cnote ) ):
+               if( $trace_tracking_arveoli->expedition === "jne" ):
 
 			        require_once( plugin_dir_path( __FILE__ ) . 'partials/sejoli-jne-tracking.php' );
 
-				elseif( isset( $trace_tracking_arveoli->sicepat ) && $trace_tracking_arveoli->sicepat->status->code === 200 ):
+				elseif( $trace_tracking_arveoli->expedition === "sicepat" ):
 
 			        require_once( plugin_dir_path( __FILE__ ) . 'partials/sejoli-sicepat-tracking.php' );
 
